@@ -56,3 +56,18 @@ Phase 2 implemented the core golf mechanics and the charitable directory logic.
 - Built the `CharityBrowse` page and `CharityCard` components to browse and select partnered charities.
 - Built the `ScoreSubmit` page with robust form validation and Framer Motion success animations.
 - Updated the Dashboard to comprehensively display the active score reel alongside a "User Impact" widget showing total donations and the currently selected charity (receiving a default 10% cut).
+
+### Phase 3: Stripe Subscriptions & Billing (Completed)
+
+Phase 3 introduced the monetization tier and enforced subscription gating via Stripe.
+
+**Backend Setup**
+- Integrated the `stripe` Python SDK in the new `subscriptions` Django app.
+- Built the `create-checkout-session` API to generate dynamic, secure Stripe Checkout URLs.
+- Developed a robust Stripe Webhook listener (`/api/subscriptions/webhook/`) that listens for `checkout.session.completed` and `invoice.payment_failed` events with signature verification.
+- Automated the updating of `User.subscription_status` based on incoming Stripe webhook events.
+
+**Frontend Setup**
+- Developed a premium `Subscription` landing page outlining platform features and the $20/month pricing.
+- Created seamless `Success` and `Cancel` callback pages to handle Stripe's post-checkout redirects.
+- Enhanced the `ProtectedRoute` wrapper in `App.jsx` to enforce an `active` subscription status on all authenticated users, blocking access to the Dashboard and forcing a redirect to the subscription page for lapsed accounts.

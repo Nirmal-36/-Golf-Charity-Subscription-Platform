@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Dashboard from './pages/Dashboard';
 import ScoreSubmit from './pages/ScoreSubmit';
 import CharityBrowse from './pages/CharityBrowse';
+import Subscription from './pages/Subscription';
+import Success from './pages/Success';
+import Cancel from './pages/Cancel';
 
 const Login = () => {
   const { login } = useAuth();
@@ -57,23 +60,39 @@ const Login = () => {
   );
 };
 
-// Protected Route Wrapper
+// Protected Route Wrapper enforces Authentication AND Active Subscription
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
   
   if (loading) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" />;
+  
+  // If user is authenticated but not active (and not staff), redirect to subscription page
+  if (user.subscription_status !== 'active' && !user.is_staff) {
+    if (location.pathname !== '/subscribe') {
+      return <Navigate to="/subscribe" />;
+    }
+  }
   
   return children;
 };
 
 function App() {
+  const { user } = useAuth();
   return (
     <div className="min-h-screen bg-brand-light font-sans text-brand-dark">
       <Routes>
         <Route path="/login" element={<Login />} />
         
-        {/* Protected Routes */}
+        {/* Subscription Pages */}
+        <Route path="/subscribe" element={
+          user ? <Subscription /> : <Navigate to="/login" />
+        } />
+        <Route path="/success" element={<Success />} />
+        <Route path="/cancel" element={<Cancel />} />
+
+        {/* Protected Routes (Require Active Subscription) */}
         <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/scores/submit" element={<ProtectedRoute><ScoreSubmit /></ProtectedRoute>} />
         <Route path="/charities" element={<ProtectedRoute><CharityBrowse /></ProtectedRoute>} />
