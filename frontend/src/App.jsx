@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import Dashboard from './pages/Dashboard';
+import ScoreSubmit from './pages/ScoreSubmit';
+import CharityBrowse from './pages/CharityBrowse';
 
-// Temporary Mock Pages
 const Login = () => {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
@@ -55,17 +57,6 @@ const Login = () => {
   );
 };
 
-const Dashboard = () => {
-  const { user, logout } = useAuth();
-  return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold text-brand-green mb-4">Dashboard</h1>
-      <p>Welcome, {user?.email || 'User'}</p>
-      <button onClick={logout} className="mt-4 px-4 py-2 bg-brand-gold text-white rounded">Logout</button>
-    </div>
-  );
-};
-
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -83,11 +74,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         
         {/* Protected Routes */}
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
+        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/scores/submit" element={<ProtectedRoute><ScoreSubmit /></ProtectedRoute>} />
+        <Route path="/charities" element={<ProtectedRoute><CharityBrowse /></ProtectedRoute>} />
       </Routes>
     </div>
   );
