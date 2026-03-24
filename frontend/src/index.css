@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-green: #1B4332; /* Deep green */
+  --color-brand-gold: #D4AF37;  /* Gold */
+  --color-brand-light: #FAFAFA; /* Off-white */
+  --color-brand-dark: #121212;  /* Almost black */
+}
+
+@layer base {
+  body {
+    @apply bg-brand-light text-brand-dark antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
