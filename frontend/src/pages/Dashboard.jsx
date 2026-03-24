@@ -10,22 +10,36 @@ const Dashboard = () => {
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-brand-green">Welcome back!</h1>
           <p className="text-gray-600 mt-1">Ready to hit the links and make a difference.</p>
         </div>
-        <div className="flex items-center gap-4">
-          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-            user?.subscription_status === 'active' 
-              ? 'bg-green-100 text-green-700' 
-              : 'bg-red-100 text-red-700'
-          }`}>
-            {user?.subscription_status === 'active' ? 'Active Member' : 'Subscription Lapsed'}
-          </span>
-          <button onClick={logout} className="text-gray-500 hover:text-gray-800 transition">
-            <UserCircle size={28} />
-          </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link 
+            to="/draw" 
+            className="px-5 py-2.5 bg-brand-gold text-brand-dark font-bold rounded-xl hover:bg-yellow-500 transition shadow-sm inline-flex items-center gap-2"
+          >
+            <Trophy size={18} /> Prize Draw
+          </Link>
+          <Link 
+            to="/scores/submit" 
+            className="px-5 py-2.5 bg-brand-green text-white font-bold rounded-xl hover:bg-brand-green/90 transition shadow-sm"
+          >
+            + Submit Score
+          </Link>
+          <div className="flex items-center gap-4 ml-0 md:ml-4 border-l pl-4 border-gray-200">
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              user?.subscription_status === 'active' 
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-red-100 text-red-700'
+            }`}>
+              {user?.subscription_status === 'active' ? 'Active' : 'Missing Sub'}
+            </span>
+            <button onClick={logout} className="text-gray-400 hover:text-brand-dark transition">
+              <UserCircle size={28} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -41,12 +55,7 @@ const Dashboard = () => {
                 <Trophy className="text-brand-gold" />
                 <h2 className="text-xl font-bold">Your Active Scores</h2>
               </div>
-              <Link 
-                to="/scores/submit" 
-                className="text-sm font-medium bg-brand-green text-white px-4 py-2 rounded-lg hover:bg-brand-green/90 transition"
-              >
-                Submit Score
-              </Link>
+              {/* The submit score button was moved to the main header */}
             </div>
             <ScoreReel />
           </section>

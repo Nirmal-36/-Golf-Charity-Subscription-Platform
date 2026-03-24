@@ -71,3 +71,21 @@ Phase 3 introduced the monetization tier and enforced subscription gating via St
 - Developed a premium `Subscription` landing page outlining platform features and the $20/month pricing.
 - Created seamless `Success` and `Cancel` callback pages to handle Stripe's post-checkout redirects.
 - Enhanced the `ProtectedRoute` wrapper in `App.jsx` to enforce an `active` subscription status on all authenticated users, blocking access to the Dashboard and forcing a redirect to the subscription page for lapsed accounts.
+
+### Phase 4: Monthly Draw Engine (Completed)
+
+Phase 4 implemented the automated monthly prize draw system.
+
+**Backend Setup**
+- Built the `DrawRound`, `DrawEntry`, and `DrawWinner` models to manage monthly schedules and user participation.
+- Integrated **Celery + Redis** for background task processing.
+- Developed an automated **Monthly Draw Task**: Picks 5 random winning numbers (1–50), calculates hits for all entries, and identifies winners across three tiers (3, 4, or 5 matches).
+- Implemented **Jackpot Rollover Logic**: Automatically rolls the jackpot into the next month's Draw if no one hits all 5 numbers.
+- Built REST APIs for fetching the current draw details, submitting number entries, and viewing personal entry history.
+
+**Frontend Setup**
+- Developed the `Draw` page featuring an interactive **Number Picker** (exactly 5 unique selections required).
+- Implemented a **Live Countdown Timer** (Days/Hours/Minutes/Seconds) synced with the backend draw date.
+- Added visual confirmation of user entries, displaying the user's selected numbers directly on the Draw page.
+- Created the **Draw History** page where users can review past entries and see their match results and winnings.
+- Integrated quick-access "Prize Draw" entry directly on the main Dashboard.

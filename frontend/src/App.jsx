@@ -7,6 +7,8 @@ import CharityBrowse from './pages/CharityBrowse';
 import Subscription from './pages/Subscription';
 import Success from './pages/Success';
 import Cancel from './pages/Cancel';
+import Draw from './pages/Draw';
+import DrawHistory from './pages/DrawHistory';
 
 const Login = () => {
   const { login } = useAuth();
@@ -96,6 +98,8 @@ function App() {
         <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/scores/submit" element={<ProtectedRoute><ScoreSubmit /></ProtectedRoute>} />
         <Route path="/charities" element={<ProtectedRoute><CharityBrowse /></ProtectedRoute>} />
+        <Route path="/draw" element={<ProtectedRoute><Draw /></ProtectedRoute>} />
+        <Route path="/draw/history" element={<ProtectedRoute><DrawHistory /></ProtectedRoute>} />
       </Routes>
     </div>
   );
