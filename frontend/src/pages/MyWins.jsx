@@ -44,10 +44,15 @@ const MyWins = () => {
 
   return (
     <div className="min-h-screen bg-brand-light p-4 md:p-8 text-brand-dark">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">My Wins</h1>
-          <Link to="/" className="text-brand-green hover:underline">← Back to Dashboard</Link>
+      <div className="max-w-4xl mx-auto pt-8">
+        <div className="flex items-center justify-between mb-12 border-b border-gray-200 pb-8">
+          <div>
+            <h1 className="text-4xl font-black tracking-tight">My <span className="text-brand-gold">Wins</span></h1>
+            <p className="text-gray-500 mt-2 font-medium">Tracking your prize history and verification status.</p>
+          </div>
+          <div className="w-16 h-16 bg-brand-gold/10 rounded-2xl flex items-center justify-center text-brand-gold">
+             <Trophy size={32} />
+          </div>
         </div>
 
         {wins.length === 0 ? (

@@ -1,66 +1,59 @@
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 import ScoreReel from '../components/ScoreReel';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Trophy, Heart, ArrowRight, UserCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import SubscriptionBadge from '../components/SubscriptionBadge';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
 
+  if (user?.is_staff) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
   return (
-    <div className="max-w-5xl mx-auto p-4 md:p-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-5xl mx-auto p-4 md:p-8"
+    >
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-3xl font-bold text-brand-green">Welcome back!</h1>
-          <p className="text-gray-600 mt-1">Ready to hit the links and make a difference.</p>
+          <h1 className="text-4xl font-black text-brand-dark tracking-tight">
+            Dashboard
+          </h1>
+          <p className="text-gray-500 mt-2 font-medium">
+            Welcome back, <span className="text-brand-green">{user?.username}</span>. Here's your current impact.
+          </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          {user?.is_staff && (
-            <Link 
-              to="/admin" 
-              className="px-5 py-2.5 bg-gray-800 text-white font-bold rounded-xl hover:bg-black transition shadow-sm"
-            >
-              Admin
-            </Link>
-          )}
-          <Link 
-            to="/my-wins" 
-            className="px-5 py-2.5 border-2 border-brand-gold text-brand-gold font-bold rounded-xl hover:bg-brand-gold hover:text-white transition shadow-sm"
-          >
-            My Wins
-          </Link>
+        <div className="flex items-center gap-3">
           <Link 
             to="/draw" 
-            className="px-5 py-2.5 bg-brand-gold text-brand-dark font-bold rounded-xl hover:bg-yellow-500 transition shadow-sm inline-flex items-center gap-2"
+            className="px-6 py-3 bg-brand-gold text-brand-dark font-black rounded-2xl hover:bg-yellow-500 transition shadow-lg shadow-brand-gold/20 flex items-center gap-2"
           >
-            <Trophy size={18} /> Prize Draw
+            <Trophy size={20} /> Prize Draw
           </Link>
           <Link 
             to="/scores/submit" 
-            className="px-5 py-2.5 bg-brand-green text-white font-bold rounded-xl hover:bg-brand-green/90 transition shadow-sm"
+            className="px-6 py-3 bg-brand-green text-white font-black rounded-2xl hover:bg-brand-green/90 transition shadow-lg shadow-brand-green/20"
           >
             + Submit Score
           </Link>
-          <div className="flex items-center gap-4 ml-0 md:ml-4 border-l pl-4 border-gray-200">
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-              user?.subscription_status === 'active' 
-                ? 'bg-green-100 text-green-700' 
-                : 'bg-red-100 text-red-700'
-            }`}>
-              {user?.subscription_status === 'active' ? 'Active' : 'Missing Sub'}
-            </span>
-            <button onClick={logout} className="text-gray-400 hover:text-brand-dark transition">
-              <UserCircle size={28} />
-            </button>
-          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Main Column */}
-        <div className="lg:col-span-2 space-y-6">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="lg:col-span-2 space-y-6"
+        >
           
           {/* Active Scores Section */}
           <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -69,7 +62,6 @@ const Dashboard = () => {
                 <Trophy className="text-brand-gold" />
                 <h2 className="text-xl font-bold">Your Active Scores</h2>
               </div>
-              {/* The submit score button was moved to the main header */}
             </div>
             <ScoreReel />
           </section>
@@ -83,10 +75,56 @@ const Dashboard = () => {
              </Link>
           </section>
 
-        </div>
+        </motion.div>
 
         {/* Sidebar Column */}
-        <div className="space-y-6">
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+          className="space-y-6"
+        >
+          {/* Membership Status Widget */}
+          <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">Membership</h2>
+              <SubscriptionBadge status={user?.subscription_status} />
+            </div>
+            
+            {user?.subscription_status === 'active' ? (
+              <>
+                <div className="bg-brand-light/50 rounded-xl p-5 mb-4 border border-brand-green/10">
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Current Plan</p>
+                   <p className="font-black text-brand-dark text-lg uppercase tracking-tight">
+                     Eagle {user?.subscription_plan === 'yearly' ? 'Yearly' : 'Monthly'}
+                   </p>
+                   <p className="text-brand-green font-bold text-sm mt-1">
+                     ${user?.subscription_plan === 'yearly' ? '200 / year' : '20 / month'}
+                   </p>
+                </div>
+                <Link 
+                  to="/subscription/details" 
+                  className="flex items-center justify-center gap-2 w-full py-4 bg-brand-dark text-white rounded-xl font-bold hover:bg-black transition shadow-xl shadow-brand-dark/10 group"
+                >
+                  Manage Membership <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </>
+            ) : (
+              <>
+                <div className="bg-red-50 rounded-xl p-5 mb-4 border border-red-100">
+                   <p className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em] mb-2">Notice</p>
+                   <p className="font-bold text-red-700">Membership Inactive</p>
+                   <p className="text-xs text-red-600/70 mt-1 leading-relaxed">Your benefits are currently suspended. Rejoin to resume your impact.</p>
+                </div>
+                <Link 
+                  to="/subscription/details" 
+                  className="flex items-center justify-center gap-2 w-full py-4 bg-brand-green text-white rounded-xl font-bold hover:bg-brand-green/90 transition shadow-xl shadow-brand-green/20 group"
+                >
+                  View Options <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </>
+            )}
+          </section>
           
           {/* Charity Impact Widget */}
           <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -120,9 +158,9 @@ const Dashboard = () => {
             </Link>
           </section>
 
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

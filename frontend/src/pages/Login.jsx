@@ -15,8 +15,12 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
-      await login(email, password);
-      navigate('/');
+      const res = await login(email, password);
+      if (res.user.is_staff) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError('Login failed. Please check your credentials.');
     } finally {

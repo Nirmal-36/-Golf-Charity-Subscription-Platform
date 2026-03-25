@@ -41,18 +41,22 @@ const AdminDashboard = () => {
   if (loading) return <div className="p-8 text-center text-gray-500">Loading admin panel...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-brand-light p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-12">
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <Link to="/" className="text-sm text-brand-green font-bold flex items-center gap-1 hover:underline mb-2">
-              <ArrowLeft size={16} /> Back to Dashboard
-            </Link>
-            <h1 className="text-3xl font-extrabold text-gray-900">Admin Command Center</h1>
+        {/* Admin Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-gray-200">
+          <div>
+            <h1 className="text-4xl font-black text-brand-dark tracking-tight">Admin <span className="text-brand-green underline decoration-brand-green/30 decoration-8 underline-offset-8">Terminal</span></h1>
+            <p className="text-gray-500 mt-4 font-medium max-w-lg">
+              Manage subscribers, verify prize winners, and monitor platform health from a centralized command center.
+            </p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 bg-white px-4 py-2 rounded-lg border shadow-sm">
-            <Clock size={16} /> Last synced: <b>{new Date().toLocaleTimeString()}</b>
+          <div className="flex items-center gap-3">
+            <div className="px-5 py-3 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-3">
+               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+               <span className="text-xs font-black text-gray-400 uppercase tracking-widest">System Live: {new Date().toLocaleTimeString()}</span>
+            </div>
           </div>
         </div>
 

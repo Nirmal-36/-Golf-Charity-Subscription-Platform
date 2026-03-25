@@ -18,10 +18,56 @@ class CreateCheckoutSessionView(APIView):
     def post(self, request):
         success_url = request.data.get('success_url', 'http://localhost:5173/success')
         cancel_url = request.data.get('cancel_url', 'http://localhost:5173/cancel')
+        plan_type = request.data.get('plan_type', 'monthly')
         
         try:
-            session = create_checkout_session(request.user, success_url, cancel_url)
+            session = create_checkout_session(request.user, success_url, cancel_url, plan_type=plan_type)
             return Response({'checkout_url': session.url})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class CreatePortalSessionView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        return_url = request.data.get('return_url', 'http://localhost:5173/subscription/details')
+        
+        try:
+            if not request.user.stripe_customer_id:
+                return Response({'error': 'No billing history found. Please subscribe first.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            session = stripe.billing_portal.Session.create(
+                customer=request.user.stripe_customer_id,
+                return_url=return_url,
+            )
+            return Response({'portal_url': session.url})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class SubscriptionHistoryView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.stripe_customer_id:
+            return Response({'invoices': []})
+            
+        try:
+            invoices = stripe.Invoice.list(
+                customer=request.user.stripe_customer_id,
+                limit=10
+            )
+            history = []
+            for inv in invoices.data:
+                history.append({
+                    'id': inv.id,
+                    'amount': inv.amount_paid / 100,
+                    'status': inv.status,
+                    'date': inv.created,
+                    'pdf': inv.invoice_pdf,
+                    'number': inv.number,
+                    'currency': inv.currency.upper()
+                })
+            return Response({'invoices': history})
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -65,13 +111,17 @@ class StripeWebhookView(APIView):
         return HttpResponse(status=200)
 
     def handle_checkout_session(self, session):
-        user_id = session.get('metadata', {}).get('user_id')
+        metadata = session.get('metadata', {})
+        user_id = metadata.get('user_id')
+        plan_type = metadata.get('plan_type', 'monthly')
+        
         if user_id:
             try:
                 user = User.objects.get(id=user_id)
                 user.stripe_customer_id = session.get('customer')
                 user.stripe_subscription_id = session.get('subscription')
                 user.subscription_status = 'active'
+                user.subscription_plan = plan_type
                 user.save()
             except User.DoesNotExist:
                 pass

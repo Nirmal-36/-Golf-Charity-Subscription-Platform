@@ -39,14 +39,15 @@ const ScoreSubmit = () => {
   }
 
   return (
-    <div className="max-w-md mx-auto p-4 md:p-8 mt-8">
-      <Link to="/" className="inline-flex items-center text-gray-500 hover:text-brand-green mb-6 transition">
-        <ArrowLeft size={20} className="mr-2" /> Back to Dashboard
-      </Link>
-      
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-        <h1 className="text-2xl font-bold text-brand-green mb-2">Log a New Score</h1>
-        <p className="text-gray-600 mb-6">Enter your Stableford score below. Remember, only your last 5 scores count towards your active handicap.</p>
+    <div className="max-w-xl mx-auto p-4 md:p-8 mt-12">
+      <div className="bg-white rounded-[40px] shadow-2xl shadow-brand-green/5 border border-gray-100 p-10 md:p-16">
+        <div className="w-16 h-16 bg-brand-green/10 rounded-2xl flex items-center justify-center text-brand-green mb-8">
+           <Trophy size={32} />
+        </div>
+        <h1 className="text-3xl font-black text-brand-dark mb-4 tracking-tight">Post Your Round</h1>
+        <p className="text-gray-500 mb-10 font-medium leading-relaxed">
+          Enter your Stableford score for today's play. We'll automatically update your handicap based on your rolling 5-score history.
+        </p>
         
         {error && (
           <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">

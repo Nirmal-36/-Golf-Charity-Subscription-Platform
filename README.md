@@ -107,3 +107,30 @@ Phase 5 finalized the platform's lifecycle by implementing the administrative ma
 - **Payouts & Logs**: Implemented secondary administrative views for processing prize payments and reviewing the system audit trail.
 - **Authentication Refactor**: Decoupled the Login and Registration flows into standalone pages with dedicated routing, significantly improving the `App.jsx` architecture and resolving HMR (Fast Refresh) stability issues.
 - **Improved Navigation**: Added "Back to Dashboard" and "Admin" shortcuts to ensure a seamless experience for privileged users.
+
+### Phase 6: Professional Brand & UI (Completed)
+
+Phase 6 focused on transforming the platform into a high-impact, professional consumer-facing application.
+
+**Backend Setup**
+- Created static informational data structures and ensured all global navigation routes are properly handled by the Django server.
+- Refined the score submission API to include enhanced validation and error reporting.
+
+**Frontend Setup**
+- Developed a premium, high-conversion Landing Page at the root route (`/`) featuring Framer Motion animations and responsive grid layouts.
+- Implemented a global `MainLayout` containing a unified Navbar and Footer to ensure brand consistency across all pages.
+- Built a suite of static "Compliance" pages including FAQ, Transparency, Our Mission, and Privacy to build user confidence.
+
+### Phase 7: Membership Center & Admin UX (Completed)
+
+Phase 7 finalized the user subscription lifecycle and implemented a strict administrative role separation.
+
+**Backend Setup**
+- Integrated **Stripe Billing Portal** API to allow users to manage their own credit cards and subscription status without leaving the platform.
+- Developed the `history` API to fetch and serialize real-time Stripe Invoice data directly for the frontend.
+- Updated `create-checkout-session` and Webhook handlers to support dynamic **Monthly vs Yearly** billing cycles.
+
+**Frontend Setup**
+- Developed a comprehensive **Membership Center** featuring a real-time Billing History table and a "Manage Subscription" integration with Stripe.
+- Implemented an interactive **Billing Cycle Toggle** (Monthly/Yearly) during the checkout process to increase user flexibility.
+- Built a **Strict Admin Mode**: Staff users now have their own dedicated Navigation Bar and are automatically redirected to the Admin Hub upon login, ensuring total separation from the player experience.
