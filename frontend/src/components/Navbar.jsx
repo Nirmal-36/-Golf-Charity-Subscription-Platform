@@ -66,7 +66,7 @@ const Navbar = () => {
 
             {user ? (
               <div className="flex items-center gap-6">
-                <SubscriptionBadge status={user.subscription_status} />
+                {!user.is_staff && <SubscriptionBadge status={user.subscription_status} />}
                 <div className="flex items-center gap-3 border-l pl-6 border-gray-100">
                   <div className="text-right hidden lg:block">
                     <p className="text-sm font-bold text-brand-dark leading-none">{user.username}</p>
@@ -131,9 +131,11 @@ const Navbar = () => {
           <div className="pt-4 mt-4 border-t border-gray-100">
             {user ? (
               <div className="space-y-4">
-                <div className="px-3">
-                   <SubscriptionBadge status={user.subscription_status} />
-                </div>
+                {!user.is_staff && (
+                  <div className="px-3">
+                    <SubscriptionBadge status={user.subscription_status} />
+                  </div>
+                )}
                 <button
                   onClick={() => { logout(); setIsOpen(false); }}
                   className="flex w-full items-center gap-3 px-3 py-4 text-base font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors"

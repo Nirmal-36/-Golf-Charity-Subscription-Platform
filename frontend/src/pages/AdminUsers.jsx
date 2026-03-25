@@ -41,7 +41,7 @@ const AdminUsers = () => {
             </h1>
             <p className="text-gray-500 text-sm">Reviewing {users.length} registered platform members.</p>
           </div>
-          <Link to="/admin" className="text-brand-green hover:underline text-sm font-bold">← Back to Dashboard</Link>
+          <Link to="/admin/dashboard" className="text-brand-green hover:underline text-sm font-bold">← Back to Dashboard</Link>
         </div>
 
         {/* Search & Filter */}

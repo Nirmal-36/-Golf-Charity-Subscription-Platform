@@ -17,7 +17,7 @@ const ScoreSubmit = () => {
     const isSuccess = await addScore(parseInt(score, 10));
     if (isSuccess) {
       setSuccess(true);
-      setTimeout(() => navigate('/dashboard'), 1500); // Redirect to dashboard after 2s
+      setTimeout(() => navigate('/dashboard'), 1500); // Redirect to dashboard after 1.5s
     }
   };
 
