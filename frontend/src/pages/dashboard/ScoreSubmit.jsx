@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useScores } from '../hooks/useScores';
+import { useScores } from '../../hooks/useScores';
 import { ArrowLeft, CheckCircle2, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 

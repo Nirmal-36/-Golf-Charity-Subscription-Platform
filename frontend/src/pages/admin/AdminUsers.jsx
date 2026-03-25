@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api/axios';
+import api from '../../api/axios';
 import { Search, User, Mail, CreditCard, Heart, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

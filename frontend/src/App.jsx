@@ -3,30 +3,30 @@ import { useAuth } from './hooks/useAuth';
 import MainLayout from './components/MainLayout';
 
 // Core Pages
-import LandingPage from './pages/LandingPage';
-import ExploreCharities from './pages/ExploreCharities';
-import Membership from './pages/Membership';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import StaticPage from './pages/StaticPage';
+import LandingPage from './pages/public/LandingPage';
+import ExploreCharities from './pages/charity/ExploreCharities';
+import Membership from './pages/public/Membership';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import StaticPage from './pages/public/StaticPage';
 
 // Subscriber Pages
-import Dashboard from './pages/Dashboard';
-import ScoreSubmit from './pages/ScoreSubmit';
-import CharityBrowse from './pages/CharityBrowse';
-import Subscription from './pages/Subscription';
-import Success from './pages/Success';
-import Cancel from './pages/Cancel';
-import Draw from './pages/Draw';
-import DrawHistory from './pages/DrawHistory';
-import MyWins from './pages/MyWins';
-import SubscriptionDetails from './pages/SubscriptionDetails';
+import Dashboard from './pages/dashboard/Dashboard';
+import ScoreSubmit from './pages/dashboard/ScoreSubmit';
+import CharityBrowse from './pages/charity/CharityBrowse';
+import Subscription from './pages/dashboard/Subscription';
+import Success from './pages/public/Success';
+import Cancel from './pages/public/Cancel';
+import Draw from './pages/draw/Draw';
+import DrawHistory from './pages/draw/DrawHistory';
+import MyWins from './pages/draw/MyWins';
+import SubscriptionDetails from './pages/dashboard/SubscriptionDetails';
 
 // Admin Pages
-import AdminDashboard from './pages/AdminDashboard';
-import AdminUsers from './pages/AdminUsers';
-import AdminPayouts from './pages/AdminPayouts';
-import AdminAuditLogs from './pages/AdminAuditLogs';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminPayouts from './pages/admin/AdminPayouts';
+import AdminAuditLogs from './pages/admin/AdminAuditLogs';
 
 /**
  * Protected Route for Admin only

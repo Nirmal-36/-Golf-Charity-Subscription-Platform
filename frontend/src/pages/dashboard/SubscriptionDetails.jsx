@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 import { motion } from 'framer-motion';
 import { CreditCard, Heart, Calendar, ArrowRight, ShieldCheck, Award, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SubscriptionBadge from '../components/SubscriptionBadge';
-import api from '../api/axios';
+import SubscriptionBadge from '../../components/SubscriptionBadge';
+import api from '../../api/axios';
 
 const SubscriptionDetails = () => {
   const { user } = useAuth();

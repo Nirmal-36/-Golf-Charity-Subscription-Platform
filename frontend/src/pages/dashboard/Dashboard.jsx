@@ -1,10 +1,10 @@
 import React from 'react';
-import { useAuth } from '../hooks/useAuth';
-import ScoreReel from '../components/ScoreReel';
+import { useAuth } from '../../hooks/useAuth';
+import ScoreReel from '../../components/ScoreReel';
 import { Link, Navigate } from 'react-router-dom';
 import { Trophy, Heart, ArrowRight, UserCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import SubscriptionBadge from '../components/SubscriptionBadge';
+import SubscriptionBadge from '../../components/SubscriptionBadge';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();

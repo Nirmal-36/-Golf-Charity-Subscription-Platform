@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useDraw } from '../hooks/useDraw';
+import { useDraw } from '../../hooks/useDraw';
 import { Link } from 'react-router-dom';
 import { Trophy, Calendar, CheckCircle2 } from 'lucide-react';
 

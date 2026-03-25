@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api/axios';
+import api from '../../api/axios';
 import { Link } from 'react-router-dom';
 import { Users, DollarSign, Heart, Trophy, Clock, CheckCircle, XCircle, Search, ArrowLeft } from 'lucide-react';
 

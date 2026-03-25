@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useDraw } from '../hooks/useDraw';
+import { useDraw } from '../../hooks/useDraw';
 import { Target, AlertCircle, Clock, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import NumberPicker from '../components/NumberPicker';
+import NumberPicker from '../../components/NumberPicker';
 
 const Draw = () => {
   const { currentDraw, loading, error, fetchCurrentDraw, enterDraw } = useDraw();

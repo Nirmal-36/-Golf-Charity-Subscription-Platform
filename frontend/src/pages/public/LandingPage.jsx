@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Trophy, Heart, Target, ChevronRight, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 const LandingPage = () => {
   const { user } = useAuth();

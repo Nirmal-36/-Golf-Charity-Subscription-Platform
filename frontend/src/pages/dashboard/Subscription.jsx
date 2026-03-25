@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import api from '../api/axios';
-import { useAuth } from '../hooks/useAuth';
+import api from '../../api/axios';
+import { useAuth } from '../../hooks/useAuth';
 import { Target, Heart, Trophy, CheckCircle2 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';

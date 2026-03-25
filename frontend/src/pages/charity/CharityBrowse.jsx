@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { useCharities } from '../hooks/useCharities';
-import { useAuth } from '../hooks/useAuth';
-import CharityCard from '../components/CharityCard';
+import { useCharities } from '../../hooks/useCharities';
+import { useAuth } from '../../hooks/useAuth';
+import CharityCard from '../../components/CharityCard';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';

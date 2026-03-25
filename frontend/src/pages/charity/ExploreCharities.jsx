@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api/axios';
-import CharityCard from '../components/CharityCard';
+import api from '../../api/axios';
+import CharityCard from '../../components/CharityCard';
 import { motion } from 'framer-motion';
 import { Search, Compass, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
