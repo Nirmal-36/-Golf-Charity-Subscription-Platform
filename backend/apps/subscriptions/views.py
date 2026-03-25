@@ -84,28 +84,33 @@ class StripeWebhookView(APIView):
             event = stripe.Webhook.construct_event(
                 payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
             )
+            print(f"WEBHOOK RECEIVED: {event['type']}")
         except ValueError as e:
-            # Invalid payload
+            print("WEBHOOK ERROR: Invalid payload")
             return HttpResponse(status=400)
         except stripe.error.SignatureVerificationError as e:
-            # Invalid signature
+            print("WEBHOOK ERROR: Invalid signature. Check STRIPE_WEBHOOK_SECRET.")
             return HttpResponse(status=400)
 
         # Handle the event
         if event['type'] == 'checkout.session.completed':
             session = event['data']['object']
+            print(f"WEBHOOK: Handling checkout.session.completed for user_id: {session.get('metadata', {}).get('user_id')}")
             self.handle_checkout_session(session)
             
         elif event['type'] == 'invoice.payment_succeeded':
             invoice = event['data']['object']
+            print(f"WEBHOOK: Handling invoice.payment_succeeded for customer: {invoice.get('customer')}")
             self.handle_invoice_payment_succeeded(invoice)
             
         elif event['type'] == 'invoice.payment_failed':
             invoice = event['data']['object']
+            print(f"WEBHOOK: Handling invoice.payment_failed for customer: {invoice.get('customer')}")
             self.handle_invoice_payment_failed(invoice)
 
         elif event['type'] == 'customer.subscription.deleted':
             subscription = event['data']['object']
+            print(f"WEBHOOK: Handling customer.subscription.deleted for customer: {subscription.get('customer')}")
             self.handle_subscription_deleted(subscription)
 
         return HttpResponse(status=200)

@@ -11,11 +11,11 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'email', 'username', 'first_name', 'last_name',
             'is_staff', 'subscription_status', 'subscription_plan', 
             'subscription_end_date', 'selected_charity', 
-            'donation_percentage', 'total_donated'
+            'donation_percentage', 'total_donated', 'last_login'
         )
         read_only_fields = (
             'subscription_status', 'subscription_plan', 'subscription_end_date',
-            'total_donated'
+            'total_donated', 'last_login'
         )
 
 class RegisterSerializer(serializers.ModelSerializer):

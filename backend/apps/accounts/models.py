@@ -4,6 +4,7 @@ from django.db import models
 class User(AbstractUser):
     STATUS_CHOICES = [
         ('active', 'Active'),
+        ('inactive', 'Inactive'),
         ('cancelled', 'Cancelled'),
         ('lapsed', 'Lapsed'),
     ]
