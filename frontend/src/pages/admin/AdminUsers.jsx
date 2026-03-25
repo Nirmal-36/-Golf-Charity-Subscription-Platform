@@ -19,6 +19,36 @@ const AdminUsers = () => {
     }
   };
 
+  const handleToggleStatus = async (userId) => {
+    try {
+      await api.post(`/api/accounts/admin/users/${userId}/toggle-status/`);
+      fetchUsers();
+    } catch (err) {
+      alert("Failed to toggle status.");
+    }
+  };
+
+  const handleEdit = async (user) => {
+    const newUsername = window.prompt("Edit Username:", user.username);
+    if (!newUsername) return;
+    try {
+      await api.patch(`/api/accounts/admin/users/${user.id}/`, { username: newUsername });
+      fetchUsers();
+    } catch (err) {
+      alert("Failed to update user.");
+    }
+  };
+
+  const handleDelete = async (userId) => {
+    if (!window.confirm("Are you sure you want to PERMANENTLY delete this user? This cannot be undone.")) return;
+    try {
+      await api.delete(`/api/accounts/admin/users/${userId}/`);
+      fetchUsers();
+    } catch (err) {
+      alert("Failed to delete user.");
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -105,7 +135,26 @@ const AdminUsers = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right text-sm">
-                    <button className="text-brand-green font-bold hover:underline">Edit</button>
+                    <div className="flex items-center justify-end gap-3">
+                      <button 
+                        onClick={() => handleEdit(user)}
+                        className="text-brand-green font-bold hover:underline"
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleToggleStatus(user.id)}
+                        className={`${user.is_active ? 'text-orange-600' : 'text-blue-600'} font-bold hover:underline`}
+                      >
+                        {user.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(user.id)}
+                        className="text-red-600 font-bold hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

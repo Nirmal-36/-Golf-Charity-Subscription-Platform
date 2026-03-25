@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { Link } from 'react-router-dom';
-import { Users, DollarSign, Heart, Trophy, Clock, CheckCircle, XCircle, Search, ArrowLeft } from 'lucide-react';
+import { Users, DollarSign, Heart, Trophy, Target, Clock, CheckCircle, XCircle, Search, ArrowLeft } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -121,6 +121,8 @@ const AdminDashboard = () => {
                 <h3 className="font-bold text-gray-900 mb-4">Management & Reports</h3>
                 <div className="space-y-1">
                    <AdminLink icon={Users} label="Manage Users" count={stats.total_users} to="/admin/users" />
+                   <AdminLink icon={Heart} label="Manage Charities" count={null} to="/admin/charities" />
+                   <AdminLink icon={Target} label="Draw Management" count={null} to="/admin/draws" />
                    <AdminLink icon={Trophy} label="Prize Payouts" count={0} to="/admin/payouts" />
                    <AdminLink icon={Search} label="Audit Logs" count={null} to="/admin/logs" />
                 </div>

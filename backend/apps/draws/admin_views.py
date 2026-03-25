@@ -112,3 +112,43 @@ class AdminUsersListView(generics.ListAPIView):
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAdminUser]
+
+class AdminDrawDetailView(generics.RetrieveUpdateAPIView):
+    """
+    View or edit a specific draw round (e.g., change date or jackpot).
+    """
+    queryset = DrawRound.objects.all()
+    serializer_class = DrawRoundSerializer
+    permission_classes = [permissions.IsAdminUser]
+    lookup_field = 'pk'
+
+class AdminManualDrawTriggerView(APIView):
+    """
+    Manually trigger the draw execution for a specific round.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, pk):
+        draw = get_object_or_404(DrawRound, pk=pk, status='scheduled')
+        
+        # In a real app, we'd trigger the Celery task here.
+        # For this demonstration, we can call the service directly if it's safe.
+        try:
+            from .services import DrawService
+            results = DrawService.execute_draw(draw.id)
+            
+            # Record Audit Log
+            AdminAuditLog.objects.create(
+                admin=request.user,
+                action=f"Manually Triggered Draw #{draw.id}",
+                resource_type="DrawRound",
+                resource_id=draw.id,
+                notes=f"Draw executed successfully. Winners found: {len(results.get('winners', []))}"
+            )
+            
+            return Response({
+                "status": "Draw executed successfully.",
+                "results": results
+            })
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

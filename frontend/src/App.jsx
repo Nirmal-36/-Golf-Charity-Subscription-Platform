@@ -27,6 +27,8 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminPayouts from './pages/admin/AdminPayouts';
 import AdminAuditLogs from './pages/admin/AdminAuditLogs';
+import AdminCharities from './pages/admin/AdminCharities';
+import AdminDraws from './pages/admin/AdminDraws';
 
 /**
  * Protected Route for Admin only
@@ -105,6 +107,8 @@ function App() {
           <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
           <Route path="/admin/payouts" element={<AdminRoute><AdminPayouts /></AdminRoute>} />
           <Route path="/admin/logs" element={<AdminRoute><AdminAuditLogs /></AdminRoute>} />
+          <Route path="/admin/charities" element={<AdminRoute><AdminCharities /></AdminRoute>} />
+          <Route path="/admin/draws" element={<AdminRoute><AdminDraws /></AdminRoute>} />
 
           {/* Redirect old root to dashboard if logged in */}
           <Route path="/home" element={<Navigate to="/" replace />} />
