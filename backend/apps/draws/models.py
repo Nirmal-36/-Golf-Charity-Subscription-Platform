@@ -53,3 +53,14 @@ class DrawWinner(models.Model):
 
     def __str__(self):
         return f"Winner: {self.user.email} - Tier {self.tier}"
+
+class AdminAuditLog(models.Model):
+    admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    action = models.CharField(max_length=255) # e.g. "Approved Winner #12"
+    resource_type = models.CharField(max_length=50) # e.g. "DrawWinner"
+    resource_id = models.PositiveIntegerField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.admin.email} - {self.action} at {self.timestamp}"

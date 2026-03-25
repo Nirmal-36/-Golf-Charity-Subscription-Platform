@@ -9,8 +9,9 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'email', 'username', 'first_name', 'last_name',
-            'subscription_status', 'subscription_plan', 'subscription_end_date',
-            'selected_charity', 'donation_percentage', 'total_donated'
+            'is_staff', 'subscription_status', 'subscription_plan', 
+            'subscription_end_date', 'selected_charity', 
+            'donation_percentage', 'total_donated'
         )
         read_only_fields = (
             'subscription_status', 'subscription_plan', 'subscription_end_date',

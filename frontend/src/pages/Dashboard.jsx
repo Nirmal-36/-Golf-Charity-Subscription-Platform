@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import ScoreReel from '../components/ScoreReel';
 import { Link } from 'react-router-dom';
 import { Trophy, Heart, ArrowRight, UserCircle } from 'lucide-react';
@@ -16,6 +16,20 @@ const Dashboard = () => {
           <p className="text-gray-600 mt-1">Ready to hit the links and make a difference.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          {user?.is_staff && (
+            <Link 
+              to="/admin" 
+              className="px-5 py-2.5 bg-gray-800 text-white font-bold rounded-xl hover:bg-black transition shadow-sm"
+            >
+              Admin
+            </Link>
+          )}
+          <Link 
+            to="/my-wins" 
+            className="px-5 py-2.5 border-2 border-brand-gold text-brand-gold font-bold rounded-xl hover:bg-brand-gold hover:text-white transition shadow-sm"
+          >
+            My Wins
+          </Link>
           <Link 
             to="/draw" 
             className="px-5 py-2.5 bg-brand-gold text-brand-dark font-bold rounded-xl hover:bg-yellow-500 transition shadow-sm inline-flex items-center gap-2"

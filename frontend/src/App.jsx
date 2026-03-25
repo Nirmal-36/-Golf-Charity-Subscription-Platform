@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
 import Dashboard from './pages/Dashboard';
 import ScoreSubmit from './pages/ScoreSubmit';
 import CharityBrowse from './pages/CharityBrowse';
@@ -9,57 +8,22 @@ import Success from './pages/Success';
 import Cancel from './pages/Cancel';
 import Draw from './pages/Draw';
 import DrawHistory from './pages/DrawHistory';
+import MyWins from './pages/MyWins';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminUsers from './pages/AdminUsers';
+import AdminPayouts from './pages/AdminPayouts';
+import AdminAuditLogs from './pages/AdminAuditLogs';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
-const Login = () => {
-  const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await login(email, password);
-      navigate('/');
-    } catch (err) {
-      setError('Login failed. Please check your credentials.');
-    }
-  };
-
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="p-8 bg-white rounded shadow-md w-96">
-        <h1 className="text-2xl font-bold mb-4 text-brand-green text-center">Login</h1>
-        {error && <p className="text-red-500 mb-4 text-sm text-center">{error}</p>}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input 
-              type="email" 
-              className="w-full border rounded p-2" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required 
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
-            <input 
-              type="password" 
-              className="w-full border rounded p-2" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required 
-            />
-          </div>
-          <button type="submit" className="w-full py-2 bg-brand-green text-white rounded font-bold">
-            Sign In
-          </button>
-        </form>
-      </div>
-    </div>
-  );
+/**
+ * Protected Route for Admin only
+ */
+const AdminRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user || !user.is_staff) return <Navigate to="/" />;
+  return children;
 };
 
 // Protected Route Wrapper enforces Authentication AND Active Subscription
@@ -86,6 +50,7 @@ function App() {
     <div className="min-h-screen bg-brand-light font-sans text-brand-dark">
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         
         {/* Subscription Pages */}
         <Route path="/subscribe" element={
@@ -100,6 +65,13 @@ function App() {
         <Route path="/charities" element={<ProtectedRoute><CharityBrowse /></ProtectedRoute>} />
         <Route path="/draw" element={<ProtectedRoute><Draw /></ProtectedRoute>} />
         <Route path="/draw/history" element={<ProtectedRoute><DrawHistory /></ProtectedRoute>} />
+        <Route path="/my-wins" element={<ProtectedRoute><MyWins /></ProtectedRoute>} />
+        
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+        <Route path="/admin/payouts" element={<AdminRoute><AdminPayouts /></AdminRoute>} />
+        <Route path="/admin/logs" element={<AdminRoute><AdminAuditLogs /></AdminRoute>} />
       </Routes>
     </div>
   );

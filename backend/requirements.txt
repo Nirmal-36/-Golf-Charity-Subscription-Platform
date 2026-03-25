@@ -13,3 +13,5 @@ stripe>=8.0
 gunicorn>=21.2
 whitenoise>=6.6
 pytest-django>=4.7
+sendgrid>=6.11
+

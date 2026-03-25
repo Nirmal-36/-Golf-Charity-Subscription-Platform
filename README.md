@@ -89,3 +89,21 @@ Phase 4 implemented the automated monthly prize draw system.
 - Added visual confirmation of user entries, displaying the user's selected numbers directly on the Draw page.
 - Created the **Draw History** page where users can review past entries and see their match results and winnings.
 - Integrated quick-access "Prize Draw" entry directly on the main Dashboard.
+
+### Phase 5: Winner Workflow & Admin Dashboard (Completed)
+
+Phase 5 finalized the platform's lifecycle by implementing the administrative management suite and the winner verification process.
+
+**Backend Setup**
+- **Verification Workflow**: Integrated Supabase Storage to allow winners to upload scorecard proof.
+- **Admin Audit Logging**: Developed a specialized `AdminAuditLog` model to track every administrative decision (approvals, rejections, payouts) for high accountability.
+- **Prize Payout Management**: Built dedicated logic to track and manage prize disbursements once proof is verified.
+- **Redis Robustness**: Implemented fallback mechanisms in Celery tasks to ensure the platform remains stable (preventing 500 errors) even if the Redis service is temporarily unreachable during email dispatch.
+- **Email Notifications**: Expanded the notification system to include winner approval alerts and admin verification prompts using **SendGrid**.
+
+**Frontend Setup**
+- **Admin Command Center**: Created a high-performance administrative dashboard featuring real-time platform KPIs (Total Users, Active Subscribers, Monthly Revenue, Total Donations).
+- **User Management**: Built a searchable database for administrators to monitor member statuses and donation impact.
+- **Payouts & Logs**: Implemented secondary administrative views for processing prize payments and reviewing the system audit trail.
+- **Authentication Refactor**: Decoupled the Login and Registration flows into standalone pages with dedicated routing, significantly improving the `App.jsx` architecture and resolving HMR (Fast Refresh) stability issues.
+- **Improved Navigation**: Added "Back to Dashboard" and "Admin" shortcuts to ensure a seamless experience for privileged users.

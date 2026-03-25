@@ -127,6 +127,13 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
+# Email Settings (SendGrid)
+SENDGRID_API_KEY = config('SENDGRID_API_KEY', default='')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@golfcharity.com')
+ADMIN_EMAIL = config('ADMIN_EMAIL', default='admin@golfcharity.com')
+
+
 # Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

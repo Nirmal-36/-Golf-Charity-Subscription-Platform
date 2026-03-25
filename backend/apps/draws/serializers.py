@@ -1,5 +1,13 @@
 from rest_framework import serializers
-from .models import DrawRound, DrawEntry, DrawWinner
+from .models import DrawRound, DrawEntry, DrawWinner, AdminAuditLog
+
+class AdminAuditLogSerializer(serializers.ModelSerializer):
+    admin_email = serializers.EmailField(source='admin.email', read_only=True)
+
+    class Meta:
+        model = AdminAuditLog
+        fields = ['id', 'admin_email', 'action', 'resource_type', 'resource_id', 'timestamp', 'notes']
+        read_only_fields = ['admin_email', 'timestamp']
 
 class DrawRoundSerializer(serializers.ModelSerializer):
     class Meta:
