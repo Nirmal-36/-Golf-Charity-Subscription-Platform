@@ -5,10 +5,11 @@ This is a full-stack web application that combines golf performance tracking, ch
 ## Tech Stack
 
 - **Backend:** Django 4.2+, Django REST Framework (DRF), Celery, Redis
-- **Database:** Supabase (PostgreSQL)
+- **Database:** Supabase (PostgreSQL with Transaction Pooler / Supavisor)
 - **File Storage:** Supabase Storage
-- **Frontend:** React.js (Vite), Tailwind CSS 4, React Router
+- **Frontend:** React.js (Vite), Tailwind CSS 4, React Router, Lucide Icons
 - **Payments:** Stripe
+- **Email:** SendGrid
 
 ## Project Architecture
 

@@ -58,8 +58,8 @@ const AdminDraws = () => {
       <div className="max-w-4xl mx-auto space-y-8">
         
         <div className="flex items-center justify-between">
-          <Link to="/admin" className="text-sm text-brand-green font-bold flex items-center gap-1 hover:underline">
-            <ArrowLeft size={16} /> Dashboard
+          <Link to="/admin/dashboard" className="text-sm text-brand-green font-bold flex items-center gap-1 hover:underline">
+            <ArrowLeft size={16} /> Back to Dashboard
           </Link>
           <div className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2 ${
             currentDraw.status === 'scheduled' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
@@ -83,7 +83,7 @@ const AdminDraws = () => {
               </p>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/10 w-full md:w-auto">
+            <div className="w-full bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/10 md:w-2/4">
                <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Current Jackpot</div>
                <div className="text-4xl font-black text-brand-gold mb-4">${parseFloat(currentDraw.jackpot_amount).toLocaleString()}</div>
                <button 

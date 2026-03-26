@@ -22,7 +22,8 @@ const Login = () => {
         navigate('/dashboard');
       }
     } catch (err) {
-      setError('Login failed. Please check your credentials.');
+      const message = err.response?.data?.detail || 'Login failed. Please check your credentials.';
+      setError(message);
     } finally {
       setLoading(false);
     }

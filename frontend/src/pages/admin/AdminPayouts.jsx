@@ -37,8 +37,8 @@ const AdminPayouts = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
-        <Link to="/admin" className="text-sm text-brand-green font-bold flex items-center gap-1 hover:underline">
-          <ArrowLeft size={16} /> Back to Admin
+        <Link to="/admin/dashboard" className="text-sm text-brand-green font-bold flex items-center gap-1 hover:underline">
+          <ArrowLeft size={16} /> Back to Dashboard
         </Link>
         <h1 className="text-3xl font-extrabold text-gray-900">Prize Payouts</h1>
         

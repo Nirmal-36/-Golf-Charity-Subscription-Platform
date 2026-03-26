@@ -75,8 +75,8 @@ const AdminCharities = () => {
             <p className="text-gray-500 font-medium">Manage partner organizations and donation routing.</p>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/admin" className="text-gray-400 hover:text-brand-dark transition text-sm font-bold flex items-center gap-1">
-              <ArrowLeft size={16} /> Dashboard
+            <Link to="/admin/dashboard" className="text-gray-400 hover:text-brand-dark transition text-sm font-bold flex items-center gap-1">
+              <ArrowLeft size={16} /> Back to Dashboard
             </Link>
             <button 
               onClick={handleAddCharity}

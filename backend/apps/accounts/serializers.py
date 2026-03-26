@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.core.exceptions import ObjectDoesNotExist
 
 User = get_user_model()
 
@@ -9,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'email', 'username', 'first_name', 'last_name',
-            'is_staff', 'subscription_status', 'subscription_plan', 
+            'is_staff', 'is_active', 'subscription_status', 'subscription_plan', 
             'subscription_end_date', 'selected_charity', 
             'donation_percentage', 'total_donated', 'last_login'
         )
@@ -37,6 +38,17 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
+        # Pre-check for deactivated accounts to provide a better error message
+        username = attrs.get(self.username_field)
+        try:
+            user = User.objects.get(**{self.username_field: username})
+            if not user.is_active:
+                raise serializers.ValidationError({
+                    "detail": "Your account has been deactivated by an administrator. Please contact support."
+                })
+        except User.DoesNotExist:
+            pass # Standard TokenObtainPairSerializer will handle non-existent users
+
         data = super().validate(attrs)
         # Add extra user info to the payload
         data['user'] = UserSerializer(self.user).data

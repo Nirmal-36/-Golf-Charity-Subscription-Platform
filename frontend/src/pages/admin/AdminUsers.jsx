@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
-import { Search, User, Mail, CreditCard, Heart, Filter } from 'lucide-react';
+import { Search, User, Mail, CreditCard, Heart, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all'); // all, active, lapsed, inactive
 
   const fetchUsers = async () => {
     try {
@@ -21,28 +22,17 @@ const AdminUsers = () => {
 
   const handleToggleStatus = async (userId) => {
     try {
-      await api.post(`/api/accounts/admin/users/${userId}/toggle-status/`);
+      await api.post(`/api/auth/admin/users/${userId}/toggle-status/`);
       fetchUsers();
     } catch (err) {
       alert("Failed to toggle status.");
     }
   };
 
-  const handleEdit = async (user) => {
-    const newUsername = window.prompt("Edit Username:", user.username);
-    if (!newUsername) return;
-    try {
-      await api.patch(`/api/accounts/admin/users/${user.id}/`, { username: newUsername });
-      fetchUsers();
-    } catch (err) {
-      alert("Failed to update user.");
-    }
-  };
-
   const handleDelete = async (userId) => {
     if (!window.confirm("Are you sure you want to PERMANENTLY delete this user? This cannot be undone.")) return;
     try {
-      await api.delete(`/api/accounts/admin/users/${userId}/`);
+      await api.delete(`/api/auth/admin/users/${userId}/`);
       fetchUsers();
     } catch (err) {
       alert("Failed to delete user.");
@@ -53,10 +43,17 @@ const AdminUsers = () => {
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter(u => 
-    u.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    u.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = u.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          u.username.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesFilter = filterStatus === 'all' || 
+                          (filterStatus === 'active' && u.subscription_status === 'active' && u.is_active) ||
+                          (filterStatus === 'lapsed' && u.subscription_status !== 'active') ||
+                          (filterStatus === 'inactive' && !u.is_active);
+                          
+    return matchesSearch && matchesFilter;
+  });
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading user database...</div>;
 
@@ -71,7 +68,9 @@ const AdminUsers = () => {
             </h1>
             <p className="text-gray-500 text-sm">Reviewing {users.length} registered platform members.</p>
           </div>
-          <Link to="/admin/dashboard" className="text-brand-green hover:underline text-sm font-bold">← Back to Dashboard</Link>
+          <Link to="/admin/dashboard" className="text-sm text-brand-green font-bold flex items-center gap-1 hover:underline">
+            <ArrowLeft size={16} /> Back to Dashboard
+          </Link>
         </div>
 
         {/* Search & Filter */}
@@ -86,9 +85,16 @@ const AdminUsers = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-200 transition">
-            <Filter size={16} /> Filters
-          </button>
+          <select 
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="bg-gray-100 px-4 py-2 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-green border-none transition cursor-pointer"
+          >
+            <option value="all">All Users</option>
+            <option value="active">Active Subscriptions</option>
+            <option value="lapsed">Lapsed Subscriptions</option>
+            <option value="inactive">Deactivated Accounts</option>
+          </select>
         </div>
 
         {/* User Table */}
@@ -119,14 +125,23 @@ const AdminUsers = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm">
-                    <span className={`px-2.5 py-0.5 rounded-full font-bold text-xs flex items-center gap-1 w-max ${
-                      user.subscription_status === 'active' 
-                        ? 'bg-green-100 text-green-700' 
-                        : 'bg-red-100 text-red-700'
-                    }`}>
-                      <CreditCard size={12} />
-                      {user.subscription_status === 'active' ? 'Active' : 'Lapsed'}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1 w-max ${
+                        user.subscription_status === 'active' 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-red-100 text-red-700'
+                      }`}>
+                        <CreditCard size={10} />
+                        {user.subscription_status === 'active' ? 'Active Sub' : 'Lapsed Sub'}
+                      </span>
+                      <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1 w-max ${
+                        user.is_active 
+                          ? 'bg-blue-100 text-blue-700' 
+                          : 'bg-gray-100 text-gray-400'
+                      }`}>
+                        {user.is_active ? 'Account Active' : 'Account Disabled'}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="text-sm font-bold text-gray-900">${user.total_donated}</div>
@@ -136,12 +151,6 @@ const AdminUsers = () => {
                   </td>
                   <td className="px-6 py-4 text-right text-sm">
                     <div className="flex items-center justify-end gap-3">
-                      <button 
-                        onClick={() => handleEdit(user)}
-                        className="text-brand-green font-bold hover:underline"
-                      >
-                        Edit
-                      </button>
                       <button 
                         onClick={() => handleToggleStatus(user.id)}
                         className={`${user.is_active ? 'text-orange-600' : 'text-blue-600'} font-bold hover:underline`}

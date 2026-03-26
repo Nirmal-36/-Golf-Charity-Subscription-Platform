@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { motion } from 'framer-motion';
-import { Menu, X, Trophy, LogOut, User, LayoutDashboard, Compass, CreditCard } from 'lucide-react';
+import { Menu, X, Trophy, LogOut, User, LayoutDashboard, Compass, CreditCard, Heart, Target } from 'lucide-react';
 import SubscriptionBadge from './SubscriptionBadge';
 
 const Navbar = () => {
@@ -15,6 +15,8 @@ const Navbar = () => {
         ? [
             { name: 'Admin Hub', href: '/admin/dashboard', icon: LayoutDashboard },
             { name: 'Users', href: '/admin/users', icon: User },
+            { name: 'Charities', href: '/admin/charities', icon: Heart },
+            { name: 'Draws', href: '/admin/draws', icon: Target },
             { name: 'Payouts', href: '/admin/payouts', icon: CreditCard },
             { name: 'Audit Logs', href: '/admin/logs', icon: Menu },
           ]
