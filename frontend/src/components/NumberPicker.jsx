@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const NumberPicker = ({ selectedNumbers, onToggle }) => {
   return (
     <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 mb-6">
-      {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => {
+      {Array.from({ length: 45 }, (_, i) => i + 1).map((num) => {
         const isSelected = selectedNumbers.includes(num);
         return (
           <motion.button

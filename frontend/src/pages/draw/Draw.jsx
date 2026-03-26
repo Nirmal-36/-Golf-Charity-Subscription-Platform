@@ -178,7 +178,7 @@ const Draw = () => {
                 className="mt-8"
               >
                 <div className="mb-6 flex items-center justify-between">
-                  <p className="text-gray-600 font-medium">Select exactly 5 numbers (1-50):</p>
+                  <p className="text-gray-600 font-medium">Select exactly 5 numbers (1-45):</p>
                   <div className={`font-bold transition-colors ${selectedNumbers.length === 5 ? 'text-brand-green' : 'text-gray-400'}`}>
                     {selectedNumbers.length}/5 Selected
                   </div>

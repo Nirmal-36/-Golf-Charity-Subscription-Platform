@@ -132,6 +132,14 @@ const LandingPage = () => {
               <h2 className="text-4xl md:text-5xl font-black mb-8 tracking-tight">Real People. <br /><span className="text-brand-gold">Real Impact.</span></h2>
               <p className="text-gray-400 text-lg leading-relaxed mb-10 max-w-xl">
                 We've partnered with over 50 vetted charities. When you improve your game, you improve the world. Transparency is our core value—every cent is tracked and audited.
+                {!user?.is_staff && (
+                  <>
+                    <br /><br />
+                    <Link to="/charity-registration" className="text-brand-gold hover:underline font-bold flex items-center gap-2">
+                      Partner with us <ChevronRight size={16} />
+                    </Link>
+                  </>
+                )}
               </p>
               
               <div className="space-y-6">

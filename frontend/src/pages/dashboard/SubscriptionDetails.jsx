@@ -110,7 +110,7 @@ const SubscriptionDetails = () => {
                         {user?.subscription_plan === 'yearly' ? 'Eagle Yearly' : 'Eagle Monthly'} Membership
                       </h3>
                       <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">
-                        ${user?.subscription_plan === 'yearly' ? '200.00 / Year' : '20.00 / Month'}
+                        ${user?.subscription_plan === 'yearly' ? '99.00 / Year' : '9.99 / Month'}
                       </p>
                     </div>
                   </div>
@@ -252,13 +252,38 @@ const SubscriptionDetails = () => {
                   <Heart size={24} className="fill-brand-green/20" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-brand-dark line-clamp-1">{user?.selected_charity || 'No Charity Selected'}</p>
+                  <p className="font-bold text-brand-dark line-clamp-1">{user?.selected_charity_name || 'No Charity Selected'}</p>
                   <p className="text-xs text-gray-400 font-medium">Monthly Recipient</p>
                 </div>
               </div>
+
+              <div className="mb-8 p-4 bg-gray-50 rounded-2xl">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-xs font-bold text-gray-500 uppercase">Donation Split</p>
+                  <p className="text-sm font-black text-brand-green">{user?.donation_percentage}%</p>
+                </div>
+                <input 
+                  type="range" 
+                  min="10" 
+                  max="100" 
+                  step="5"
+                  value={user?.donation_percentage || 10}
+                  onChange={async (e) => {
+                    try {
+                      await api.patch('/api/accounts/profile/', { donation_percentage: e.target.value });
+                      window.location.reload(); // Quick refresh to update user context
+                    } catch (err) {
+                      alert("Failed to update percentage");
+                    }
+                  }}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-green"
+                />
+                <p className="text-[10px] text-gray-400 mt-2 italic text-center">Slide to increase your impact (Min 10%)</p>
+              </div>
+
               <Link 
                 to="/charities" 
-                className="block text-center py-4 bg-gray-50 text-brand-dark font-bold rounded-2xl hover:bg-brand-green hover:text-white transition-all border border-gray-100"
+                className="block text-center py-4 bg-brand-dark text-white font-bold rounded-2xl hover:bg-black transition-all shadow-lg"
               >
                 Change Charity
               </Link>

@@ -9,11 +9,11 @@ def create_checkout_session(user, success_url, cancel_url, plan_type='monthly'):
     """
     if plan_type == 'yearly':
         plan_name = 'Eagle Yearly Membership'
-        amount = 20000  # $200.00
+        amount = 9900  # $99.00
         interval = 'year'
     else:
         plan_name = 'Eagle Monthly Membership'
-        amount = 2000   # $20.00
+        amount = 999   # $9.99
         interval = 'month'
 
     session = stripe.checkout.Session.create(
@@ -38,7 +38,8 @@ def create_checkout_session(user, success_url, cancel_url, plan_type='monthly'):
         cancel_url=cancel_url,
         metadata={
             'user_id': user.id,
-            'plan_type': plan_type
+            'plan_type': plan_type,
+            'donation_percentage': str(user.donation_percentage)
         }
     )
     return session

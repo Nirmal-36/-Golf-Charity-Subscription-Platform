@@ -56,11 +56,26 @@ const CharityBrowse = () => {
       variants={containerVariants}
       className="max-w-5xl mx-auto p-4 md:p-8"
     >
-      <motion.div variants={itemVariants} className="mb-12">
-        <h1 className="text-4xl font-black text-brand-dark tracking-tight">Charity <span className="text-brand-green">Directory</span></h1>
-        <p className="text-gray-500 mt-4 font-medium max-w-2xl leading-relaxed">
-          Select your partner for the month. 10% of your contribution is automatically routed to support their mission.
-        </p>
+      <motion.div variants={itemVariants} className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-black text-brand-dark tracking-tight">Charity <span className="text-brand-green">Directory</span></h1>
+          <p className="text-gray-500 mt-4 font-medium max-w-2xl leading-relaxed">
+            Select your partner for the month. 10% of your contribution is automatically routed to support their mission.
+          </p>
+        </div>
+        {user?.selected_charity && (
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+          >
+            <Link 
+              to="/subscribe" 
+              className="px-8 py-4 bg-brand-green text-white font-bold rounded-2xl shadow-lg shadow-brand-green/20 hover:bg-brand-green/90 transition flex items-center gap-2"
+            >
+              Proceed to Membership <ArrowLeft className="rotate-180" size={18} />
+            </Link>
+          </motion.div>
+        )}
       </motion.div>
 
       <motion.div 

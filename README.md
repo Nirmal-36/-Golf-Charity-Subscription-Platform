@@ -109,29 +109,60 @@ Phase 5 finalized the platform's lifecycle by implementing the administrative ma
 - **Authentication Refactor**: Decoupled the Login and Registration flows into standalone pages with dedicated routing, significantly improving the `App.jsx` architecture and resolving HMR (Fast Refresh) stability issues.
 - **Improved Navigation**: Added "Back to Dashboard" and "Admin" shortcuts to ensure a seamless experience for privileged users.
 
-### Phase 6: Professional Brand & UI (Completed)
+### Phase 8-10: Refinement & Admin Connectivity (Completed)
 
-Phase 6 focused on transforming the platform into a high-impact, professional consumer-facing application.
+These phases focused on structural stability and bridging the gap between the administrative hub and the live platform data.
 
-**Backend Setup**
-- Created static informational data structures and ensured all global navigation routes are properly handled by the Django server.
-- Refined the score submission API to include enhanced validation and error reporting.
+- **Pages Architecture**: Refactored the frontend into a structured `/pages` directory hierarchy, separating Auth, Admin, Dashboard, and Public views for better maintainability.
+- **Admin Hub Connectivity**: Linked the administrative "Users," "Charities," and "Draws" views to live backend endpoints, enabling real-time management of the platform's ecosystem.
+- **Stability Fixes**: Resolved critical Supabase connectivity issues by migrating to IPv4 Transaction Poolers and fixed several UI-breaking missing icon imports.
 
-**Frontend Setup**
-- Developed a premium, high-conversion Landing Page at the root route (`/`) featuring Framer Motion animations and responsive grid layouts.
-- Implemented a global `MainLayout` containing a unified Navbar and Footer to ensure brand consistency across all pages.
-- Built a suite of static "Compliance" pages including FAQ, Transparency, Our Mission, and Privacy to build user confidence.
+### Phase 11: Charity Lifecycle & Application Portal (Completed)
 
-### Phase 7: Membership Center & Admin UX (Completed)
+Transformed the charity management into a professional, multi-stage approval workflow.
 
-Phase 7 finalized the user subscription lifecycle and implemented a strict administrative role separation.
+- **Partner Portal**: Built a dedicated landing page for new organizations to apply for partnership directly on the platform.
+- **Administrative Review**: Implemented a "Pending Applications" queue in the Admin Hub, allowing staff to review and explicitly approve/reject new charity requests.
+- **Status Management**: Developed a high-end toggle system for administrators to instantly activate/deactivate approved charities, providing total control over the directory.
 
-**Backend Setup**
-- Integrated **Stripe Billing Portal** API to allow users to manage their own credit cards and subscription status without leaving the platform.
-- Developed the `history` API to fetch and serialize real-time Stripe Invoice data directly for the frontend.
-- Updated `create-checkout-session` and Webhook handlers to support dynamic **Monthly vs Yearly** billing cycles.
+### Phase 12: End-to-End Subscription & Draw Lifecycle (Completed)
 
-**Frontend Setup**
-- Developed a comprehensive **Membership Center** featuring a real-time Billing History table and a "Manage Subscription" integration with Stripe.
-- Implemented an interactive **Billing Cycle Toggle** (Monthly/Yearly) during the checkout process to increase user flexibility.
-- Built a **Strict Admin Mode**: Staff users now have their own dedicated Navigation Bar and are automatically redirected to the Admin Hub upon login, ensuring total separation from the player experience.
+The final transformation of the platform into a robust, automated financial ecosystem.
+
+- **Pricing Overhaul**: Migrated to the new professional tiers: **$9.99/mo** and **$99/yr**.
+- **The 40/10/50 Split**: Developed a custom Stripe Webhook handler that automatically distributes revenue upon every successful payment:
+    - **40%** to the Monthly Prize Pool.
+    - **10%** (minimum) to the user's selected Charity.
+    - **50%** to the Platform.
+- **Rolling "Last 5" System**: Implemented a "Last 5 Active" rolling score system. The platform now automatically deactivates older scores as new ones are submitted, ensuring only the most fresh performance determines draw eligibility.
+- **Draw Algorithm & Rollover**: Refined the monthly draw engine to enforce a 1-45 number range and implemented automated Jackpot Rollover logic (40% of pool) if no 5-match winner is found.
+- **Winner Verification & Admin Payouts**: Built a secure "My Wins" portal for users to upload proof and a corresponding administrative interface for proof review and prize disbursement.
+- **Admin Draw Transparency**: Added a persistent results modal in the Admin Hub, ensuring winners and winning numbers are clearly documented before the next round begins.
+
+---
+
+## Getting Started
+
+### Backend Setup
+1. `cd backend`
+2. `python -m venv venv`
+3. `source venv/bin/activate` (or `venv\Scripts\activate` on Windows)
+4. `pip install -r requirements.txt`
+5. Create a `.env` file based on the provided template (DB, Stripe, SendGrid credentials).
+6. `python manage.py migrate`
+7. `python manage.py runserver`
+
+### Frontend Setup
+1. `cd frontend`
+2. `npm install`
+3. Create a `.env` file with `VITE_API_BASE_URL`.
+4. `npm run dev`
+
+### Running the Draw Engine (Celery)
+Ensure Redis is running, then in a separate terminal:
+`celery -A config worker --loglevel=info`
+`celery -A config beat --loglevel=info`
+
+### Stripe Integration
+To test webhooks locally:
+`stripe listen --forward-to localhost:8000/api/subscriptions/webhook/`

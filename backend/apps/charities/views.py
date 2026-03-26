@@ -67,3 +67,13 @@ class UpdateDonationPercentageView(APIView):
             
         except (TypeError, ValueError):
             return Response({'error': 'Invalid percentage.'}, status=status.HTTP_400_BAD_REQUEST)
+
+class CharityRegisterView(generics.CreateAPIView):
+    """Public endpoint for charities to apply for partnership"""
+    queryset = Charity.objects.all()
+    serializer_class = CharitySerializer
+    permission_classes = [permissions.AllowAny]
+
+    def perform_create(self, serializer):
+        # All public applications are disabled by default until admin review
+        serializer.save(is_active=False)

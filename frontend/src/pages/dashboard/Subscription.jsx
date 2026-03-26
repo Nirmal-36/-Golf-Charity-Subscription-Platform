@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import api from '../../api/axios';
 import { useAuth } from '../../hooks/useAuth';
 import { Target, Heart, Trophy, CheckCircle2 } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const Subscription = () => {
@@ -108,12 +108,30 @@ const Subscription = () => {
 
           <div className="mb-3 text-xs font-black text-brand-gold uppercase tracking-[0.2em]">Membership</div>
           <h2 className="text-6xl font-black text-brand-dark mb-3">
-            ${planType === 'monthly' ? '20' : '200'}
+            ${planType === 'monthly' ? '9.99' : '99'}
             <span className="text-xl text-gray-400 font-medium">/{planType === 'monthly' ? 'mo' : 'yr'}</span>
           </h2>
-          <p className="text-gray-500 mb-10 max-w-xs leading-relaxed">
+          <p className="text-gray-500 mb-6 max-w-xs leading-relaxed">
             {planType === 'monthly' ? 'Billed monthly. Cancel anytime easily through your dashboard.' : 'Billed annually. Best value for dedicated players.'}
           </p>
+
+          <div className="w-full max-w-xs mb-8 p-4 rounded-2xl bg-gray-50 border border-gray-100 text-left">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-gray-400 uppercase">Selected Charity</span>
+              <Link to="/charities" className="text-xs font-bold text-brand-green hover:underline">Change</Link>
+            </div>
+            {user?.selected_charity_name ? (
+              <div className="flex items-center gap-2 text-brand-dark font-bold">
+                <Heart size={16} className="text-brand-green" />
+                {user.selected_charity_name}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-red-500 font-bold text-sm">
+                <Heart size={16} />
+                Please select a charity
+              </div>
+            )}
+          </div>
           
           {error && (
             <motion.div 
@@ -129,12 +147,14 @@ const Subscription = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleSubscribe} 
-            disabled={loading}
-            className="w-full max-w-xs py-5 bg-brand-dark text-white rounded-2xl font-bold text-xl hover:bg-black transition shadow-xl shadow-gray-200 disabled:opacity-70 flex items-center justify-center gap-3"
+            disabled={loading || !user?.selected_charity}
+            className="w-full max-w-xs py-5 bg-brand-dark text-white rounded-2xl font-bold text-xl hover:bg-black transition shadow-xl shadow-gray-200 disabled:opacity-50 flex items-center justify-center gap-3"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-            ) : 'Subscribe Now'}
+            ) : (
+              !user?.selected_charity ? 'Select Charity First' : 'Subscribe Now'
+            )}
           </motion.button>
           
           <div className="mt-10 flex items-center gap-3 text-sm text-gray-400 font-medium">

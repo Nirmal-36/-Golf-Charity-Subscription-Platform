@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Trophy, Camera, Send, Globe, Mail } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 const Footer = () => {
+  const { user } = useAuth();
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
@@ -49,6 +51,9 @@ const Footer = () => {
               <li><Link to="/membership" className="hover:text-brand-green transition-colors">Membership Plans</Link></li>
               <li><Link to="/draw" className="hover:text-brand-green transition-colors">Monthly Draws</Link></li>
               <li><Link to="/faq" className="hover:text-brand-green transition-colors">Common Questions</Link></li>
+              {!user?.is_staff && (
+                <li><Link to="/charity-registration" className="hover:text-brand-green transition-colors font-bold text-brand-green/80">Partner with Us</Link></li>
+              )}
             </ul>
           </div>
 

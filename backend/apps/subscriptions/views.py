@@ -8,6 +8,8 @@ from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from apps.accounts.models import User
+from apps.draws.models import DrawRound
+from apps.charities.models import Charity
 from .services import create_checkout_session
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -133,11 +135,36 @@ class StripeWebhookView(APIView):
 
     def handle_invoice_payment_succeeded(self, invoice):
         customer_id = invoice.get('customer')
+        amount_paid = invoice.get('amount_paid', 0) / 100  # Convert cents to dollars
+        
         if customer_id:
             try:
                 user = User.objects.get(stripe_customer_id=customer_id)
                 user.subscription_status = 'active'
+                
+                # Financial Split Logic (Phase 12)
+                # 40% Prize Pool, 10%+ Charity, 50% Platform
+                prize_allocation = amount_paid * 0.40
+                charity_percentage = float(user.donation_percentage) / 100
+                charity_allocation = amount_paid * charity_percentage
+                
+                # 1. Update Current Draw Pool
+                current_draw = DrawRound.objects.filter(status='scheduled').order_by('draw_date').first()
+                if current_draw:
+                    current_draw.total_pool = float(current_draw.total_pool) + prize_allocation
+                    current_draw.save()
+                
+                # 2. Update Charity & User Stats
+                if user.selected_charity:
+                    charity = user.selected_charity
+                    charity.total_received = float(charity.total_received) + charity_allocation
+                    charity.save()
+                    
+                    user.total_donated = float(user.total_donated) + charity_allocation
+                
                 user.save()
+                print(f"FINANCIAL SPLIT COMPLETE: ${prize_allocation} to Prize, ${charity_allocation} to {user.selected_charity.name if user.selected_charity else 'None'}")
+                
             except User.DoesNotExist:
                 pass
 

@@ -99,7 +99,7 @@ const Dashboard = () => {
                      Eagle {user?.subscription_plan === 'yearly' ? 'Yearly' : 'Monthly'}
                    </p>
                    <p className="text-brand-green font-bold text-sm mt-1">
-                     ${user?.subscription_plan === 'yearly' ? '200 / year' : '20 / month'}
+                     ${user?.subscription_plan === 'yearly' ? '99 / year' : '9.99 / month'}
                    </p>
                 </div>
                 <Link 
@@ -140,10 +140,10 @@ const Dashboard = () => {
 
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <div className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Supported Charity</div>
-              {user?.selected_charity ? (
+              {user?.selected_charity_name ? (
                 <>
-                  <div className="font-bold text-brand-dark">{user.selected_charity}</div>
-                  <div className="text-sm text-gray-600 mt-1">Receiving {user.donation_percentage}% of your monthly fee.</div>
+                  <div className="font-bold text-brand-dark">{user.selected_charity_name}</div>
+                  <div className="text-sm text-gray-600 mt-1">Receiving {user.donation_percentage}% of your fee.</div>
                 </>
               ) : (
                 <div className="text-sm text-gray-500 italic">No charity selected yet.</div>

@@ -30,8 +30,11 @@ class AdminStatsView(APIView):
             "total_donated": total_donated,
             "total_winners": total_winners,
             "pending_winners": pending_winners,
-            # Mock revenue calculation: $20 per active subscriber
-            "monthly_revenue": active_subscribers * 20.00
+            # Revenue calculation based on Phase 12 pricing ($9.99/mo, $99/yr)
+            "monthly_revenue": (
+                User.objects.filter(subscription_status='active', subscription_plan='monthly').count() * 9.99 +
+                User.objects.filter(subscription_status='active', subscription_plan='yearly').count() * 8.25 # $99 / 12
+            )
         })
 
 class AdminPendingWinnersView(generics.ListAPIView):

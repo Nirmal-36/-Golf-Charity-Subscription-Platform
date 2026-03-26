@@ -9,6 +9,7 @@ import Membership from './pages/public/Membership';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import StaticPage from './pages/public/StaticPage';
+import CharityRegister from './pages/auth/CharityRegister';
 
 // Subscriber Pages
 import Dashboard from './pages/dashboard/Dashboard';
@@ -51,7 +52,8 @@ const ProtectedRoute = ({ children }) => {
   // If user is authenticated but not active (and not staff), redirect to subscription page
   // ALLOW access to subscription details so they can see history and sub options
   if (user.subscription_status !== 'active' && !user.is_staff) {
-    if (location.pathname !== '/subscribe' && location.pathname !== '/subscription/details') {
+    const allowedPaths = ['/subscribe', '/subscription/details', '/charities'];
+    if (!allowedPaths.includes(location.pathname)) {
       return <Navigate to="/subscribe" />;
     }
   }
@@ -72,6 +74,7 @@ function App() {
           <Route path="/membership" element={<Membership />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/charity-registration" element={<CharityRegister />} />
           
           {/* Static Content Routes */}
           <Route path="/about" element={<StaticPage title="Our Mission" description="Driving change through every swing." />} />

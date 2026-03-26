@@ -6,18 +6,23 @@ from django.core.exceptions import ObjectDoesNotExist
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
+    selected_charity_name = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
         fields = (
             'id', 'email', 'username', 'first_name', 'last_name',
             'is_staff', 'is_active', 'subscription_status', 'subscription_plan', 
-            'subscription_end_date', 'selected_charity', 
+            'subscription_end_date', 'selected_charity', 'selected_charity_name',
             'donation_percentage', 'total_donated', 'last_login'
         )
         read_only_fields = (
             'subscription_status', 'subscription_plan', 'subscription_end_date',
-            'total_donated', 'last_login'
+            'total_donated', 'last_login', 'selected_charity_name'
         )
+
+    def get_selected_charity_name(self, obj):
+        return obj.selected_charity.name if obj.selected_charity else None
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)

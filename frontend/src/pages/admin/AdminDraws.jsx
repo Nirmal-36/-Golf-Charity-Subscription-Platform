@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import api from '../../api/axios';
 import { Link } from 'react-router-dom';
 import { Target, Calendar, Trophy, Zap, ArrowLeft, AlertCircle } from 'lucide-react';
 
 const AdminDraws = () => {
   const [currentDraw, setCurrentDraw] = useState(null);
+  const [drawResults, setDrawResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
 
@@ -40,10 +42,10 @@ const AdminDraws = () => {
     if (!window.confirm("WARNING: This will manually execute the draw, pick winners, and lock the round. This cannot be undone. Proceed?")) return;
     
     setExecuting(true);
+    setDrawResults(null);
     try {
       const res = await api.post(`/api/draws/admin/draws/${currentDraw.id}/trigger/`);
-      alert(`Success! Draw executed. ${res.data.status}`);
-      fetchDrawData();
+      setDrawResults(res.data.results);
     } catch (err) {
       alert("Draw execution failed: " + (err.response?.data?.error || err.message));
     } finally {
@@ -128,7 +130,59 @@ const AdminDraws = () => {
            </div>
         </div>
 
-        {currentDraw.status === 'completed' && (
+        {drawResults && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-green-600 rounded-[32px] p-8 text-white shadow-2xl space-y-6"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-black flex items-center gap-2">
+                <Trophy className="text-brand-gold" /> Draw Execution Results
+              </h2>
+              <button 
+                onClick={() => { setDrawResults(null); fetchDrawData(); }}
+                className="text-xs font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition"
+              >
+                Close & Next Round
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <p className="text-green-100 font-medium">Winning Numbers:</p>
+                <div className="flex gap-3">
+                  {drawResults.winning_numbers.map((num, i) => (
+                    <div key={i} className="w-12 h-12 bg-white text-brand-green rounded-full flex items-center justify-center font-black text-xl shadow-lg">
+                      {num}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="bg-white/10 p-6 rounded-2xl border border-white/10">
+                <p className="text-xs font-black uppercase tracking-widest text-green-200 mb-4">Winner Summary</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm">Jackpot Won:</span>
+                    <span className="font-bold underline decoration-brand-gold decoration-2 underline-offset-4">{drawResults.jackpot_won ? 'YES!' : 'No'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm">Total Individual Winners:</span>
+                    <span className="font-bold">{drawResults.winners.length}</span>
+                  </div>
+                  {!drawResults.jackpot_won && (
+                    <p className="text-[10px] text-green-200 mt-4 italic">
+                      * Jackpot amount has rolled over to next month's round.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {currentDraw.status === 'completed' && !drawResults && (
           <div className="bg-yellow-50 border border-yellow-100 p-6 rounded-2xl flex items-start gap-4 text-yellow-800">
              <AlertCircle className="shrink-0 mt-0.5" />
              <div>

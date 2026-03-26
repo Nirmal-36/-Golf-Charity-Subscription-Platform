@@ -29,8 +29,8 @@ class DrawEntrySerializer(serializers.ModelSerializer):
         if len(set(value)) != 5:
             raise serializers.ValidationError("Numbers must be unique.")
         for num in value:
-            if not isinstance(num, int) or num < 1 or num > 50:
-                raise serializers.ValidationError("Numbers must be integers between 1 and 50.")
+            if not isinstance(num, int) or num < 1 or num > 45:
+                raise serializers.ValidationError("Numbers must be integers between 1 and 45.")
         return value
 
 class DrawWinnerSerializer(serializers.ModelSerializer):
