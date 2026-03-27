@@ -239,8 +239,27 @@ class AdminOverdueDrawCheckView(APIView):
 
     def post(self, request):
         from .tasks import execute_monthly_draw
-        result = execute_monthly_draw() # Call the task function directly
-        return Response({"status": "Check completed", "result": result})
+        
+        # Phase 29 Enhancement: Sync total_pool from live subscriber data
+        # This ensures Match 3/4 pools are populated based on 40% of current active revenue
+        draw = DrawRound.objects.filter(status='scheduled').order_by('draw_date').first()
+        if draw:
+            active_users = User.objects.filter(is_active=True, subscription_status='active')
+            monthly_revenue = (
+                active_users.filter(subscription_plan='monthly').count() * 9.99 +
+                active_users.filter(subscription_plan='yearly').count() * 8.25 # $99 / 12
+            )
+            # Allocation is 40% of revenue
+            pool_calculation = float(monthly_revenue) * 0.40
+            draw.total_pool = pool_calculation
+            draw.save()
+
+        result = execute_monthly_draw() # Still checks for overdue draws
+        return Response({
+            "status": "Check completed", 
+            "result": result,
+            "synced_pool": pool_calculation if draw else 0
+        })
 
 class AdminDrawHistoryView(generics.ListAPIView):
     """

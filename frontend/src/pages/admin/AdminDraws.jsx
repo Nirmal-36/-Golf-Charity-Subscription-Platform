@@ -282,16 +282,29 @@ const AdminDraws = () => {
               </div>
            </div>
 
-           <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
-              <h3 className="text-xl font-bold text-brand-dark mb-4 flex items-center gap-2">
-                 <Trophy className="text-brand-gold" size={20} /> Quick Stats
-              </h3>
-              <div className="space-y-4">
-                 <StatItem label="Total Pool" value={`$${parseFloat(currentDraw.total_pool).toLocaleString()}`} />
-                 <StatItem label="Active Entries" value={currentDraw.entry_count || 0} />
-                 <StatItem label="Time Remaining" value={countdown} />
-              </div>
-           </div>
+            <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+               <h3 className="text-xl font-bold text-brand-dark mb-4 flex items-center gap-2">
+                  <Trophy className="text-brand-gold" size={20} /> Quick Stats
+               </h3>
+               <div className="space-y-4">
+                  <div className="flex items-center justify-between py-3 border-b border-gray-50">
+                     <span className="text-gray-400 font-medium">Total Pool (Revenue Share)</span>
+                     <div className="flex items-center gap-2">
+                        <span className="text-brand-dark font-black">${parseFloat(currentDraw.total_pool).toLocaleString()}</span>
+                        <button 
+                          onClick={handleSyncDraws}
+                          disabled={isSyncing}
+                          className="p-1.5 hover:bg-gray-100 rounded-lg text-brand-green transition"
+                          title="Sync Pool from Live Revenue"
+                        >
+                          <Zap size={14} className={isSyncing ? "animate-spin" : ""} />
+                        </button>
+                     </div>
+                  </div>
+                  <StatItem label="Active Entries" value={currentDraw.entry_count || 0} />
+                  <StatItem label="Time Remaining" value={countdown} />
+               </div>
+            </div>
         </div>
 
         {drawResults && (
@@ -408,25 +421,42 @@ const AdminDraws = () => {
                  </div>
                </div>
                
-               <div className="bg-white/5 p-6 rounded-2xl">
-                 <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-4">Projected Impact</p>
-                 <div className="space-y-3">
-                   <div className="flex justify-between text-sm">
-                     <span>Potential Winners:</span>
-                     <span className="font-bold">{simulationResults.winners.length}</span>
-                   </div>
-                   <div className="flex justify-between text-sm">
-                     <span>Jackpot Release:</span>
-                     <span className={`font-bold ${simulationResults.jackpot_won ? 'text-brand-green' : 'text-red-400'}`}>
-                        {simulationResults.jackpot_won ? 'YES' : 'NO'}
-                     </span>
-                   </div>
-                   <div className="flex justify-between text-sm">
-                     <span>Logic Type Used:</span>
-                     <span className="font-bold text-brand-gold uppercase">{simulationResults.logic_type}</span>
-                   </div>
-                 </div>
-               </div>
+                <div className="bg-white/5 p-6 rounded-2xl">
+                  <p className="text-xs font-black uppercase tracking-widest text-gray-500 mb-4">Partitioned Pool Shares</p>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-400">Match 5 (40% + JP):</span>
+                      <span className="font-mono text-brand-gold font-black underline decoration-brand-gold/30 underline-offset-4">
+                        ${parseFloat(simulationResults.pool_details.tier_5_available).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-400">Match 4 (35%):</span>
+                      <span className="font-mono font-bold">
+                        ${parseFloat(simulationResults.pool_details.tier_4_available).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-400">Match 3 (25%):</span>
+                      <span className="font-mono font-bold">
+                        ${parseFloat(simulationResults.pool_details.tier_3_available).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 pt-4 border-t border-white/5 space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Potential Winners:</span>
+                      <span className="font-bold">{simulationResults.winners.length}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Jackpot Release:</span>
+                      <span className={`font-bold ${simulationResults.jackpot_won ? 'text-brand-green' : 'text-red-400'}`}>
+                         {simulationResults.jackpot_won ? 'YES' : 'NO'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
              </div>
            </motion.div>
         )}
