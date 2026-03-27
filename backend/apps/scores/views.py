@@ -36,3 +36,11 @@ class ScoreSubmitView(APIView):
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ScoreDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Retrieve, update or delete a specific score. Owner only."""
+    serializer_class = GolfScoreSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return GolfScore.objects.filter(user=self.request.user)

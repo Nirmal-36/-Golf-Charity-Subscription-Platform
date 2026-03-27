@@ -23,6 +23,7 @@ import Draw from './pages/draw/Draw';
 import DrawHistory from './pages/draw/DrawHistory';
 import MyWins from './pages/draw/MyWins';
 import SubscriptionDetails from './pages/dashboard/SubscriptionDetails';
+import Profile from './pages/dashboard/Profile';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -102,6 +103,8 @@ function App() {
           {/* Protected Subscriber Routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/scores/submit" element={<ProtectedRoute><ScoreSubmit /></ProtectedRoute>} />
+          <Route path="/scores/edit/:id" element={<ProtectedRoute><ScoreSubmit /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/charities" element={<ProtectedRoute><CharityBrowse /></ProtectedRoute>} />
           <Route path="/draw" element={<ProtectedRoute><Draw /></ProtectedRoute>} />
           <Route path="/draw/history" element={<ProtectedRoute><DrawHistory /></ProtectedRoute>} />

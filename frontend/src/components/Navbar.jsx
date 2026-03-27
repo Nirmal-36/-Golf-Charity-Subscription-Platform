@@ -2,13 +2,25 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { motion } from 'framer-motion';
-import { Menu, X, Trophy, LogOut, User, LayoutDashboard, Compass, CreditCard, Heart, Target } from 'lucide-react';
+import { Menu, X, Trophy, UserCircle, LogOut, User, LayoutDashboard, Compass, CreditCard, Heart, Target } from 'lucide-react';
 import SubscriptionBadge from './SubscriptionBadge';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+  const dropdownRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const navigation = user 
     ? (user.is_staff 
@@ -22,7 +34,6 @@ const Navbar = () => {
           ]
         : [
             { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-            { name: 'Subscription', href: '/subscription/details', icon: CreditCard },
             { name: 'Prize Draw', href: '/draw', icon: Trophy },
             { name: 'Charities', href: '/charities', icon: Compass },
           ])
@@ -67,17 +78,63 @@ const Navbar = () => {
             <div className="h-8 w-[1px] bg-gray-100 mx-2"></div>
 
             {user ? (
-              <div className="flex items-center gap-6">
-                {!user.is_staff && <SubscriptionBadge status={user.subscription_status} />}
-                <div className="flex items-center gap-3 border-l pl-6 border-gray-100">
-                  <div className="text-right hidden lg:block">
-                    <p className="text-sm font-bold text-brand-dark leading-none">{user.username}</p>
-                    <p className="text-xs text-gray-400 mt-1 capitalize">{user.is_staff ? 'Administrator' : 'Subscriber'}</p>
+              <div className="flex items-center gap-4 relative" ref={dropdownRef}>
+                <button 
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-3 p-1.5 pr-4 rounded-2xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 group"
+                >
+                  <div className="w-10 h-10 bg-brand-green/10 text-brand-green rounded-xl flex items-center justify-center font-black shadow-sm group-hover:scale-105 transition-transform">
+                    {user.username[0].toUpperCase()}
                   </div>
-                  <button onClick={logout} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                    <LogOut size={22} />
-                  </button>
-                </div>
+                  <div className="text-left hidden lg:block">
+                    <p className="text-sm font-bold text-brand-dark leading-none">{user.username}</p>
+                    <p className="text-[10px] text-gray-400 mt-1 font-black uppercase tracking-widest">{user.is_staff ? 'Administrator' : (user.subscription_status === 'active' ? 'Active Pro' : 'Subscriber')}</p>
+                  </div>
+                </button>
+
+                {/* Profile Dropdown */}
+                <React.Fragment>
+                  {isProfileOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      className="absolute right-0 top-full mt-2 w-72 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden ring-1 ring-black/5"
+                    >
+                      <div className="p-6 bg-brand-light/30 border-b border-gray-100">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-12 h-12 bg-brand-green text-white rounded-2xl flex items-center justify-center text-xl font-black">
+                            {user.username[0].toUpperCase()}
+                          </div>
+                          <div className="overflow-hidden">
+                            <p className="font-black text-brand-dark truncate">{user.username}</p>
+                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                          </div>
+                        </div>
+                        <SubscriptionBadge status={user.subscription_status} />
+                      </div>
+
+                      <div className="p-2">
+                        <DropdownLink to="/profile" icon={UserCircle} label="Account Settings" onClick={() => setIsProfileOpen(false)} />
+                        {!user.is_staff && (
+                          <DropdownLink to="/subscription/details" icon={CreditCard} label="Membership & Billing" onClick={() => setIsProfileOpen(false)} />
+                        )}
+                        {user.is_staff && (
+                          <DropdownLink to="/admin/dashboard" icon={LayoutDashboard} label="Admin Terminal" onClick={() => setIsProfileOpen(false)} />
+                        )}
+                      </div>
+
+                      <div className="p-2 border-t border-gray-50 bg-gray-50/50">
+                        <button 
+                          onClick={() => { logout(); setIsProfileOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                        >
+                          <LogOut size={18} />
+                          Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </React.Fragment>
               </div>
             ) : (
               <div className="flex items-center gap-4">
@@ -133,11 +190,18 @@ const Navbar = () => {
           <div className="pt-4 mt-4 border-t border-gray-100">
             {user ? (
               <div className="space-y-4">
-                {!user.is_staff && (
-                  <div className="px-3">
+                <div className="flex items-center gap-3 px-3 py-2">
+                  <div className="w-10 h-10 bg-brand-green text-white rounded-xl flex items-center justify-center font-bold">
+                    {user.username[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-bold text-brand-dark">{user.username}</p>
                     <SubscriptionBadge status={user.subscription_status} />
                   </div>
-                )}
+                </div>
+                <Link to="/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-3 py-4 text-base font-bold text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+                   <UserCircle size={20} /> Settings
+                </Link>
                 <button
                   onClick={() => { logout(); setIsOpen(false); }}
                   className="flex w-full items-center gap-3 px-3 py-4 text-base font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors"
@@ -170,5 +234,16 @@ const Navbar = () => {
     </nav>
   );
 };
+
+const DropdownLink = ({ to, icon: Icon, label, onClick }) => (
+  <Link 
+    to={to} 
+    onClick={onClick}
+    className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:text-brand-green hover:bg-brand-green/5 rounded-xl transition-all group"
+  >
+    <Icon size={18} className="text-gray-400 group-hover:text-brand-green transition-colors" />
+    {label}
+  </Link>
+);
 
 export default Navbar;

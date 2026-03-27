@@ -80,7 +80,7 @@ Phase 4 implemented the automated monthly prize draw system.
 **Backend Setup**
 - Built the `DrawRound`, `DrawEntry`, and `DrawWinner` models to manage monthly schedules and user participation.
 - Integrated **Celery + Redis** for background task processing.
-- Developed an automated **Monthly Draw Task**: Picks 5 random winning numbers (1–50), calculates hits for all entries, and identifies winners across three tiers (3, 4, or 5 matches).
+- Developed an automated **Monthly Draw Task**: Picks 5 random winning numbers (1–45), calculates hits for all entries, and identifies winners across three tiers (3, 4, or 5 matches).
 - Implemented **Jackpot Rollover Logic**: Automatically rolls the jackpot into the next month's Draw if no one hits all 5 numbers.
 - Built REST APIs for fetching the current draw details, submitting number entries, and viewing personal entry history.
 

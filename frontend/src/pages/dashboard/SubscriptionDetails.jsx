@@ -270,7 +270,7 @@ const SubscriptionDetails = () => {
                   value={user?.donation_percentage || 10}
                   onChange={async (e) => {
                     try {
-                      await api.patch('/api/accounts/profile/', { donation_percentage: e.target.value });
+                      await api.patch('/api/auth/me/', { donation_percentage: e.target.value });
                       window.location.reload(); // Quick refresh to update user context
                     } catch (err) {
                       alert("Failed to update percentage");

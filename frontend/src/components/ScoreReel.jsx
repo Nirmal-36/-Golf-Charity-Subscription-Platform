@@ -52,6 +52,7 @@ const ScoreReel = () => {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
               <ScoreCard 
+                id={s.id}
                 score={s.score} 
                 submittedAt={s.submitted_at} 
                 isOldest={scores.length === 5 && index === oldestIndex} 

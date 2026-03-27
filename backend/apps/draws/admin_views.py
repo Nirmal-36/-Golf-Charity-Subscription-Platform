@@ -35,6 +35,16 @@ class AdminStatsView(APIView):
         total_paid = DrawWinner.objects.filter(status='paid').aggregate(Sum('prize_amount'))['prize_amount__sum'] or 0
         prize_pool_balance = max(0, total_prize_pool - float(total_paid))
 
+        # Analytics: Charity distribution (top 5)
+        charity_stats = User.objects.exclude(selected_charity=None).values('selected_charity__name').annotate(
+            count=Count('id')
+        ).order_by('-count')[:5]
+
+        # Analytics: Recent draw participation (last 5 rounds)
+        draw_stats = DrawRound.objects.filter(status='completed').annotate(
+            total_entries=Count('entries')
+        ).order_by('-draw_date').values('draw_date', 'total_entries')[:5]
+
         return Response({
             "total_users": total_users,
             "active_subscribers": active_subscribers,
@@ -42,7 +52,9 @@ class AdminStatsView(APIView):
             "total_winners": total_winners,
             "pending_winners": pending_winners,
             "monthly_revenue": monthly_revenue,
-            "prize_pool_balance": prize_pool_balance
+            "prize_pool_balance": prize_pool_balance,
+            "charity_stats": charity_stats,
+            "draw_stats": list(draw_stats)
         })
 
 class AdminPendingWinnersView(generics.ListAPIView):

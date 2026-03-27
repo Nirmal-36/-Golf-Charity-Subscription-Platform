@@ -24,8 +24,8 @@ def execute_monthly_draw():
         draw.status = 'running'
         draw.save()
 
-        # Step 1: Pick 5 random unique winning numbers between 1 and 50
-        winning_numbers = random.sample(range(1, 51), 5)
+        # Step 1: Pick 5 random unique winning numbers between 1 and 45
+        winning_numbers = random.sample(range(1, 46), 5)
         draw.winning_numbers = list(winning_numbers)
 
         tier_5_winner_found = False
