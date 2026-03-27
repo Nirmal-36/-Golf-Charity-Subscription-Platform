@@ -16,6 +16,7 @@ class User(AbstractUser):
 
     email = models.EmailField(unique=True)
     stripe_customer_id = models.CharField(max_length=100, blank=True)
+    stripe_subscription_id = models.CharField(max_length=100, blank=True)
     subscription_status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,

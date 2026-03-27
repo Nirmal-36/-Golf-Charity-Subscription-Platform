@@ -69,7 +69,7 @@ const CharityBrowse = () => {
             animate={{ scale: 1, opacity: 1 }}
           >
             <Link 
-              to="/subscribe" 
+              to="/subscription/details" 
               className="px-8 py-4 bg-brand-green text-white font-bold rounded-2xl shadow-lg shadow-brand-green/20 hover:bg-brand-green/90 transition flex items-center gap-2"
             >
               Proceed to Membership <ArrowLeft className="rotate-180" size={18} />

@@ -129,7 +129,33 @@ class StripeWebhookView(APIView):
                 user.stripe_subscription_id = session.get('subscription')
                 user.subscription_status = 'active'
                 user.subscription_plan = plan_type
+                
+                # Fetch end date from Stripe (Phase 13 robust fix)
+                if user.stripe_subscription_id:
+                    sub = stripe.Subscription.retrieve(user.stripe_subscription_id)
+                    from django.utils import timezone
+                    import datetime
+                    
+                    # Robust fallback: use latest_invoice period end if current_period_end is missing
+                    end_ts = getattr(sub, 'current_period_end', None)
+                    if not end_ts and sub.latest_invoice:
+                        inv = stripe.Invoice.retrieve(sub.latest_invoice)
+                        if inv.lines.data:
+                            end_ts = inv.lines.data[0].period.end
+                    
+                    if end_ts:
+                        user.subscription_end_date = timezone.make_aware(
+                            datetime.datetime.fromtimestamp(end_ts)
+                        )
+                
                 user.save()
+                
+                # Send Welcome Email (Phase 13 Improvement)
+                try:
+                    from apps.core.emails import send_welcome_email
+                    send_welcome_email.delay(user.email, plan_type)
+                except Exception as e:
+                    print(f"FAILED TO QUEUE WELCOME EMAIL: {str(e)}")
             except User.DoesNotExist:
                 pass
 
@@ -141,6 +167,25 @@ class StripeWebhookView(APIView):
             try:
                 user = User.objects.get(stripe_customer_id=customer_id)
                 user.subscription_status = 'active'
+                
+                # Update next billing date (Phase 13 robust fix)
+                sub_id = invoice.get('subscription')
+                if sub_id:
+                    sub = stripe.Subscription.retrieve(sub_id)
+                    from django.utils import timezone
+                    import datetime
+                    
+                    # Robust fallback: use invoice period end if current_period_end is missing
+                    end_ts = getattr(sub, 'current_period_end', None)
+                    if not end_ts:
+                        # Since we are in the invoice handler, we use this invoice's period end
+                        if invoice.get('lines') and invoice['lines']['data']:
+                             end_ts = invoice['lines']['data'][0]['period']['end']
+                    
+                    if end_ts:
+                        user.subscription_end_date = timezone.make_aware(
+                            datetime.datetime.fromtimestamp(end_ts)
+                        )
                 
                 # Financial Split Logic (Phase 12)
                 # 40% Prize Pool, 10%+ Charity, 50% Platform

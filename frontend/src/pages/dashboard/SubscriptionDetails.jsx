@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCard, Heart, Calendar, ArrowRight, ShieldCheck, Award, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SubscriptionBadge from '../../components/SubscriptionBadge';
 import api from '../../api/axios';
 
 const SubscriptionDetails = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState(null);
   const [invoices, setInvoices] = useState([]);
+  
+  // New States for Donation Slider
+  const [tempPercentage, setTempPercentage] = useState(user?.donation_percentage || 10);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   React.useEffect(() => {
     fetchHistory();
-  }, []);
+    if (user?.donation_percentage) {
+      setTempPercentage(user.donation_percentage);
+    }
+  }, [user?.donation_percentage]);
 
   const fetchHistory = async () => {
     setHistoryLoading(true);
@@ -26,6 +34,22 @@ const SubscriptionDetails = () => {
       console.error('Failed to fetch billing history');
     } finally {
       setHistoryLoading(false);
+    }
+  };
+
+  const handlePercentageUpdate = async (val) => {
+    setIsSaving(true);
+    setSaved(false);
+    try {
+      const { data } = await api.patch('/api/auth/me/', { donation_percentage: val });
+      // Update local context immediately for zero-latency feel
+      setUser({ ...user, donation_percentage: val });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.error('Failed to update donation percentage');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -244,46 +268,73 @@ const SubscriptionDetails = () => {
 
             <motion.div 
               variants={cardVariants}
-              className="bg-white rounded-[40px] p-8 shadow-xl border border-gray-100"
+              className="bg-white rounded-[40px] p-8 shadow-xl border border-gray-100 relative overflow-hidden"
             >
-              <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Supported Cause</p>
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-brand-green/10 text-brand-green rounded-xl flex items-center justify-center">
-                  <Heart size={24} className="fill-brand-green/20" />
+              <div className="flex items-center justify-between mb-6">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Donation Split</p>
+                <AnimatePresence>
+                  {isSaving && (
+                    <motion.span 
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="text-[10px] font-black text-brand-green uppercase tracking-tighter bg-green-50 px-2 py-1 rounded-full"
+                    >
+                      Saving...
+                    </motion.span>
+                  )}
+                  {saved && (
+                    <motion.span 
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="text-[10px] font-black text-brand-green uppercase tracking-tighter bg-green-50 px-2 py-1 rounded-full flex items-center gap-1"
+                    >
+                      <ShieldCheck size={10} /> Saved
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
+              
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-brand-green/10 text-brand-green rounded-xl flex items-center justify-center">
+                    <Heart size={20} className="fill-brand-green/20" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-brand-dark text-sm line-clamp-1">{user?.selected_charity_name || 'No Charity Selected'}</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Monthly Recipient</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-bold text-brand-dark line-clamp-1">{user?.selected_charity_name || 'No Charity Selected'}</p>
-                  <p className="text-xs text-gray-400 font-medium">Monthly Recipient</p>
+                <div className="text-right text-2xl font-black text-brand-green">
+                  {tempPercentage}%
                 </div>
               </div>
 
-              <div className="mb-8 p-4 bg-gray-50 rounded-2xl">
-                <div className="flex justify-between items-center mb-2">
-                  <p className="text-xs font-bold text-gray-500 uppercase">Donation Split</p>
-                  <p className="text-sm font-black text-brand-green">{user?.donation_percentage}%</p>
-                </div>
+              <div className="relative pt-2 pb-6">
                 <input 
                   type="range" 
                   min="10" 
                   max="100" 
                   step="5"
-                  value={user?.donation_percentage || 10}
-                  onChange={async (e) => {
-                    try {
-                      await api.patch('/api/auth/me/', { donation_percentage: e.target.value });
-                      window.location.reload(); // Quick refresh to update user context
-                    } catch (err) {
-                      alert("Failed to update percentage");
-                    }
+                  value={tempPercentage}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    setTempPercentage(val);
+                    handlePercentageUpdate(val);
                   }}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-green"
+                  className="w-full h-2.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-brand-green focus:ring-4 focus:ring-brand-green/10 outline-none transition-all"
                 />
-                <p className="text-[10px] text-gray-400 mt-2 italic text-center">Slide to increase your impact (Min 10%)</p>
+                <div className="flex justify-between mt-2 px-1">
+                  <span className="text-[9px] font-black text-gray-300">10%</span>
+                  <span className="text-[9px] font-black text-gray-300">50%</span>
+                  <span className="text-[9px] font-black text-gray-300">100%</span>
+                </div>
               </div>
 
               <Link 
                 to="/charities" 
-                className="block text-center py-4 bg-brand-dark text-white font-bold rounded-2xl hover:bg-black transition-all shadow-lg"
+                className="block text-center py-4 bg-gray-50 text-gray-400 text-sm font-bold rounded-2xl hover:bg-brand-dark hover:text-white transition-all border border-gray-100"
               >
                 Change Charity
               </Link>

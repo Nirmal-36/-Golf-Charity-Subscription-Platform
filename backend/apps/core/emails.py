@@ -73,3 +73,36 @@ def send_winner_approval_notification(user_email, draw_id, prize_amount):
         sg.send(message)
     except:
         pass
+@shared_task
+def send_welcome_email(user_email, plan_type):
+    """
+    Sends a premium 'Welcome to the Club' email to new subscribers.
+    """
+    plan_name = "Monthly" if plan_type == 'monthly' else "Yearly"
+    message = Mail(
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to_emails=user_email,
+        subject='Welcome to the Club! Your Membership is Active ⛳️',
+        html_content=f'''
+            <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
+                <h1 style="color: #059669;">Welcome to the Club!</h1>
+                <p>We're thrilled to have you as an active member of the Golf Charity platform.</p>
+                <p>Your <strong>{plan_name} Membership</strong> is now active. You've officially unlocked:</p>
+                <ul>
+                    <li><strong>Rolling Score Tracking</strong>: Keep your handicap fresh and accurate.</li>
+                    <li><strong>Monthly Prize Draws</strong>: You're automatically in the running for this month's jackpot.</li>
+                    <li><strong>Charitable Impact</strong>: A portion of your fee is already heading towards your selected cause.</li>
+                </ul>
+                <p>Log in to your dashboard to see your impact and manage your round entries.</p>
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                    <p style="color: #666; font-size: 14px;">Happy Golfing,<br>The Golf Charity Team</p>
+                </div>
+            </div>
+        '''
+    )
+    try:
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        sg.send(message)
+        return f"Welcome email sent to {user_email}"
+    except Exception as e:
+        return f"Error sending welcome email: {str(e)}"
