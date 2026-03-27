@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Trophy, Heart, Target, ChevronRight, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
+import { Trophy, Heart, Target, ChevronRight, CheckCircle2, ShieldCheck, Zap, Coins, Calculator, History } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const LandingPage = () => {
@@ -120,6 +120,90 @@ const LandingPage = () => {
               </motion.div>
             ))}
           </motion.div>
+        </div>
+      </section>
+
+      {/* Draw Mechanics Section */}
+      <section className="py-32 bg-brand-light relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-brand-gold/5 rounded-full blur-3xl -mr-48 -mt-48"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-green/5 rounded-full blur-3xl -ml-48 -mb-48"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black text-brand-dark tracking-tight mb-4">The Monthly Jackpot</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto italic font-medium">Precision, Transparency, and Life-Changing Prizes.</p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left side: The Numbers */}
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-8"
+            >
+              <div className="bg-white p-10 rounded-[40px] shadow-2xl shadow-brand-green/5 border border-white">
+                <h3 className="text-3xl font-black text-brand-dark mb-6">How to Win</h3>
+                <div className="space-y-6">
+                  {[
+                    { icon: Target, title: "1-45 Number Pool", desc: "Select 5 unique numbers for your monthly entry. Simple, fair, and fully transparent." },
+                    { icon: History, title: "Rolling Eligibility", desc: "Your last 5 active scores keep you in the running. Play consistently to stay qualified." },
+                    { icon: Calculator, title: "Jackpot Rollover", desc: "If no one matches all 5, the entire prize pool rolls over to next month's round." }
+                  ].map((item, i) => (
+                    <div key={i} className="flex gap-6">
+                      <div className="w-14 h-14 bg-brand-light rounded-2xl flex-shrink-0 flex items-center justify-center text-brand-green">
+                        <item.icon size={28} />
+                      </div>
+                      <div>
+                        <h4 className="text-xl font-extrabold text-brand-dark mb-1">{item.title}</h4>
+                        <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right side: Prize Tiers */}
+            <div className="grid grid-cols-1 gap-6">
+              {[
+                { match: "Match 5", prize: "Progressive Jackpot", color: "bg-brand-dark text-white", highlight: "text-brand-gold", icon: Trophy, note: "The Big One" },
+                { match: "Match 4", prize: "$500 Reward", color: "bg-white text-brand-dark", highlight: "text-brand-green", icon: Coins, note: "Fixed Prize" },
+                { match: "Match 3", prize: "$50 Credit", color: "bg-white text-brand-dark", highlight: "text-brand-green", icon: Zap, note: "Fixed Prize" }
+              ].map((tier, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  viewport={{ once: true }}
+                  className={`${tier.color} p-8 rounded-3xl shadow-lg border border-gray-100 relative overflow-hidden group`}
+                >
+                  <div className="flex justify-between items-center relative z-10">
+                    <div>
+                      <span className="text-xs font-black uppercase tracking-widest opacity-60 mb-2 block">{tier.note}</span>
+                      <h4 className="text-2xl font-black mb-1">{tier.match}</h4>
+                      <p className={`text-3xl font-black ${tier.highlight}`}>{tier.prize}</p>
+                    </div>
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${tier.color === 'bg-white text-brand-dark' ? 'bg-brand-light text-brand-green' : 'bg-white/10 text-brand-gold'}`}>
+                      <tier.icon size={32} />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+              
+              <motion.div 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="text-center pt-4"
+              >
+                <Link to="/register" className="text-brand-green font-black uppercase tracking-widest text-sm hover:underline flex items-center justify-center gap-2">
+                  Get your numbers today <ChevronRight size={16} />
+                </Link>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 

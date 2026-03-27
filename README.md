@@ -139,30 +139,10 @@ The final transformation of the platform into a robust, automated financial ecos
 - **Winner Verification & Admin Payouts**: Built a secure "My Wins" portal for users to upload proof and a corresponding administrative interface for proof review and prize disbursement.
 - **Admin Draw Transparency**: Added a persistent results modal in the Admin Hub, ensuring winners and winning numbers are clearly documented before the next round begins.
 
----
+### Phase 13: High-Fidelity UI & UX Refinements (Completed)
 
-## Getting Started
+This phase focused on professionalizing the public-facing platform and ensuring a seamless, irritating-free user experience.
 
-### Backend Setup
-1. `cd backend`
-2. `python -m venv venv`
-3. `source venv/bin/activate` (or `venv\Scripts\activate` on Windows)
-4. `pip install -r requirements.txt`
-5. Create a `.env` file based on the provided template (DB, Stripe, SendGrid credentials).
-6. `python manage.py migrate`
-7. `python manage.py runserver`
+- **Draw Mechanics Showcase**: Added a premium section to the Landing Page detailing the **1-45 number pool**, **Rolling Eligibility** (last 5 scores), and the **tiered matching prizes** ($50, $500, and the Jackpot).
+- **Premium Design Audit**: Conducted a full visual audit of the landing page, ensuring brand colors (Green/Gold) and modern typography (inter/black) are consistent across all breakpoints.
 
-### Frontend Setup
-1. `cd frontend`
-2. `npm install`
-3. Create a `.env` file with `VITE_API_BASE_URL`.
-4. `npm run dev`
-
-### Running the Draw Engine (Celery)
-Ensure Redis is running, then in a separate terminal:
-`celery -A config worker --loglevel=info`
-`celery -A config beat --loglevel=info`
-
-### Stripe Integration
-To test webhooks locally:
-`stripe listen --forward-to localhost:8000/api/subscriptions/webhook/`

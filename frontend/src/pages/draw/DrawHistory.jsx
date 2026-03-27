@@ -46,9 +46,17 @@ const DrawHistory = () => {
 
                 <div className="text-right">
                   {entry.tier_won ? (
-                    <div className="text-brand-gold font-bold flex items-center gap-2 justify-end">
-                      <Trophy size={18} /> Tier {entry.tier_won} Winner!
-                      <div className="text-2xl ml-2">${parseFloat(entry.prize_amount).toLocaleString()}</div>
+                    <div className="flex flex-col items-end gap-2">
+                      <div className="text-brand-gold font-bold flex items-center gap-2 justify-end">
+                        <Trophy size={18} /> Tier {entry.tier_won} Winner!
+                        <div className="text-2xl ml-2">${parseFloat(entry.prize_amount).toLocaleString()}</div>
+                      </div>
+                      <Link 
+                        to="/my-wins" 
+                        className="text-xs bg-brand-gold text-brand-dark px-4 py-1.5 rounded-xl font-black hover:scale-105 transition shadow-sm"
+                      >
+                        Verify & Claim Prize
+                      </Link>
                     </div>
                   ) : (
                     <div className="text-gray-400 flex items-center gap-1 justify-end">

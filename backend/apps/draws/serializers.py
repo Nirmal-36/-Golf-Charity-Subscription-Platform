@@ -38,5 +38,5 @@ class DrawWinnerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DrawWinner
-        fields = ['id', 'draw', 'user_email', 'tier', 'prize_amount', 'status', 'proof_submitted_at']
+        fields = ['id', 'draw', 'user_email', 'tier', 'prize_amount', 'status', 'proof_screenshot_url', 'proof_submitted_at', 'admin_approved_at', 'admin_notes']
         read_only_fields = ['user_email', 'tier', 'prize_amount']

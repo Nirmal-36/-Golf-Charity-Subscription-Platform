@@ -61,11 +61,12 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           <StatCard icon={Users} label="Active Subscribers" value={stats.active_subscribers} color="text-blue-600" bg="bg-blue-50" />
           <StatCard icon={DollarSign} label="Monthly Revenue" value={`$${stats.monthly_revenue.toLocaleString()}`} color="text-green-600" bg="bg-green-50" />
+          <StatCard icon={Trophy} label="Prize Pool Balance" value={`$${parseFloat(stats.prize_pool_balance).toLocaleString()}`} color="text-brand-gold" bg="bg-yellow-50" />
           <StatCard icon={Heart} label="Charity Contributions" value={`$${stats.total_donated.toLocaleString()}`} color="text-red-600" bg="bg-red-50" />
-          <StatCard icon={Trophy} label="Total Winners" value={stats.total_winners} color="text-brand-gold" bg="bg-yellow-50" />
+          <StatCard icon={Trophy} label="Total Winners" value={stats.total_winners} color="text-brand-dark" bg="bg-gray-100" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

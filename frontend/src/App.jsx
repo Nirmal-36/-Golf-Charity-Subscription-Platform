@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import MainLayout from './components/MainLayout';
+import ScrollToTop from './components/ScrollToTop';
 
 // Core Pages
 import LandingPage from './pages/public/LandingPage';
@@ -66,6 +67,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-brand-light font-sans text-brand-dark">
+      <ScrollToTop />
       <MainLayout>
         <Routes>
           {/* Public Routes */}

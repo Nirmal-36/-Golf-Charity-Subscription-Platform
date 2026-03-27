@@ -24,17 +24,25 @@ class AdminStatsView(APIView):
         total_winners = DrawWinner.objects.count()
         pending_winners = DrawWinner.objects.filter(status='proof_submitted').count()
 
+        # Revenue calculation based on Phase 12 pricing ($9.99/mo, $99/yr)
+        monthly_revenue = (
+            User.objects.filter(subscription_status='active', subscription_plan='monthly').count() * 9.99 +
+            User.objects.filter(subscription_status='active', subscription_plan='yearly').count() * 8.25 # $99 / 12
+        )
+        
+        # 40% of revenue goes to Prize Pool
+        total_prize_pool = float(monthly_revenue) * 0.40
+        total_paid = DrawWinner.objects.filter(status='paid').aggregate(Sum('prize_amount'))['prize_amount__sum'] or 0
+        prize_pool_balance = max(0, total_prize_pool - float(total_paid))
+
         return Response({
             "total_users": total_users,
             "active_subscribers": active_subscribers,
             "total_donated": total_donated,
             "total_winners": total_winners,
             "pending_winners": pending_winners,
-            # Revenue calculation based on Phase 12 pricing ($9.99/mo, $99/yr)
-            "monthly_revenue": (
-                User.objects.filter(subscription_status='active', subscription_plan='monthly').count() * 9.99 +
-                User.objects.filter(subscription_status='active', subscription_plan='yearly').count() * 8.25 # $99 / 12
-            )
+            "monthly_revenue": monthly_revenue,
+            "prize_pool_balance": prize_pool_balance
         })
 
 class AdminPendingWinnersView(generics.ListAPIView):
@@ -155,3 +163,28 @@ class AdminManualDrawTriggerView(APIView):
             })
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+class AdminPayWinnerView(APIView):
+    """
+    Simulates or executes a Stripe Payout for a winner.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, winner_id):
+        winner = get_object_or_404(DrawWinner, id=winner_id, status='approved')
+        
+        # In production: 
+        # stripe.Transfer.create(amount=int(winner.prize_amount * 100), currency="usd", destination=winner.user.stripe_connect_id)
+        
+        winner.status = 'paid'
+        winner.save()
+
+        # Audit Log
+        AdminAuditLog.objects.create(
+            admin=request.user,
+            action=f"Processed Payout for Winner #{winner.id}",
+            resource_type="DrawWinner",
+            resource_id=winner.id,
+            notes=f"Prize: ${winner.prize_amount} paid via system trigger."
+        )
+
+        return Response({"status": "Payout processed successfully."})
