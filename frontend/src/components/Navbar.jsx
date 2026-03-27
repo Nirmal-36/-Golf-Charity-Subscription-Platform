@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { motion } from 'framer-motion';
-import { Menu, X, Trophy, UserCircle, LogOut, User, LayoutDashboard, Compass, CreditCard, Heart, Target } from 'lucide-react';
+import { Menu, X, Trophy, UserCircle, LogOut, User, LayoutDashboard, Compass, CreditCard, Heart, Target, Shield } from 'lucide-react';
 import SubscriptionBadge from './SubscriptionBadge';
 
 const Navbar = () => {
@@ -30,6 +30,7 @@ const Navbar = () => {
             { name: 'Charities', href: '/admin/charities', icon: Heart },
             { name: 'Draws', href: '/admin/draws', icon: Target },
             { name: 'Payouts', href: '/admin/payouts', icon: CreditCard },
+            { name: 'Audit Logs', href: '/admin/logs', icon: Shield },
           ]
         : user.user_role === 'organization'
         ? [
@@ -121,7 +122,7 @@ const Navbar = () => {
                             <p className="text-xs text-gray-500 truncate">{user.email}</p>
                           </div>
                         </div>
-                        {user.user_role === 'member' && <SubscriptionBadge status={user.subscription_status} />}
+                        {user.user_role === 'member' && !user.is_staff && <SubscriptionBadge status={user.subscription_status} />}
                         {user.user_role === 'organization' && (
                           <div className="mt-2 py-1 px-3 bg-brand-green/10 text-brand-green text-[10px] font-bold rounded-full inline-block uppercase tracking-wider">
                             Verified Partner
@@ -131,7 +132,7 @@ const Navbar = () => {
 
                       <div className="p-2">
                         <DropdownLink to="/profile" icon={UserCircle} label="Account Settings" onClick={() => setIsProfileOpen(false)} />
-                        {user.user_role === 'member' && (
+                        {user.user_role === 'member' && !user.is_staff && (
                           <DropdownLink to="/subscription/details" icon={CreditCard} label="Membership & Billing" onClick={() => setIsProfileOpen(false)} />
                         )}
                         {user.user_role === 'organization' && (
@@ -215,7 +216,7 @@ const Navbar = () => {
                   </div>
                   <div>
                     <p className="font-bold text-brand-dark">{user.username}</p>
-                    <SubscriptionBadge status={user.subscription_status} />
+                    {user.user_role === 'member' && !user.is_staff && <SubscriptionBadge status={user.subscription_status} />}
                   </div>
                 </div>
                 <Link to="/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-3 py-4 text-base font-bold text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">

@@ -13,7 +13,8 @@ const CustomModal = ({
   type = "confirm", // 'confirm', 'alert', 'prompt'
   inputValue = "",
   onInputChange,
-  inputPlaceholder = ""
+  inputPlaceholder = "",
+  children
 }) => {
   return (
     <AnimatePresence>
@@ -53,7 +54,9 @@ const CustomModal = ({
                 <p className="text-gray-500 font-medium leading-relaxed">{message}</p>
               </div>
 
-              {type === 'prompt' && (
+              {children}
+
+              {type === 'prompt' && !children && (
                 <div className="w-full">
                   <input 
                     type="text"

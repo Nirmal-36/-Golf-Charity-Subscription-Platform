@@ -148,33 +148,62 @@ class AdminDrawDetailView(generics.RetrieveUpdateAPIView):
 class AdminManualDrawTriggerView(APIView):
     """
     Manually trigger the draw execution for a specific round.
+    Supports is_dry_run (simulation) and custom logic_type.
     """
     permission_classes = [permissions.IsAdminUser]
-
+ 
     def post(self, request, pk):
-        draw = get_object_or_404(DrawRound, pk=pk, status='scheduled')
+        is_dry_run = request.data.get('is_dry_run', False)
+        logic_type = request.data.get('logic_type')
         
-        # In a real app, we'd trigger the Celery task here.
-        # For this demonstration, we can call the service directly if it's safe.
+        draw = get_object_or_404(DrawRound, pk=pk)
+        
+        # Only allow re-runs if it's a dry-run or if it's scheduled
+        if not is_dry_run and draw.status != 'scheduled':
+            return Response({"error": "Only scheduled draws can be officially executed."}, status=status.HTTP_400_BAD_REQUEST)
+            
         try:
             from .services import DrawService
-            results = DrawService.execute_draw(draw.id)
+            results = DrawService.execute_draw(draw.id, dry_run=is_dry_run, logic_type=logic_type)
             
             # Record Audit Log
             AdminAuditLog.objects.create(
                 admin=request.user,
-                action=f"Manually Triggered Draw #{draw.id}",
+                action=f"{'Simulated' if is_dry_run else 'Manually Triggered'} Draw #{draw.id}",
                 resource_type="DrawRound",
                 resource_id=draw.id,
-                notes=f"Draw executed successfully. Winners found: {len(results.get('winners', []))}"
+                notes=f"Logic: {results.get('logic_type')}. Winners found: {len(results.get('winners', []))}"
             )
             
             return Response({
-                "status": "Draw executed successfully.",
+                "status": f"Draw {'simulated' if is_dry_run else 'executed'} successfully.",
                 "results": results
             })
         except Exception as e:
+            import traceback
+            print(traceback.format_exc())
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class AdminPublishDrawView(APIView):
+    """
+    Formally publishes the results of a completed draw round.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, pk):
+        draw = get_object_or_404(DrawRound, pk=pk, status='completed')
+        draw.is_published = True
+        draw.save()
+
+        # Audit Log
+        AdminAuditLog.objects.create(
+            admin=request.user,
+            action=f"Published Draw Results #{draw.id}",
+            resource_type="DrawRound",
+            resource_id=draw.id
+        )
+
+        return Response({"status": "Results published successfully. Users can now view winners."})
 class AdminPayWinnerView(APIView):
     """
     Simulates or executes a Stripe Payout for a winner.
@@ -200,3 +229,23 @@ class AdminPayWinnerView(APIView):
         )
 
         return Response({"status": "Payout processed successfully."})
+
+class AdminOverdueDrawCheckView(APIView):
+    """
+    Checks for and executes any overdue scheduled draws.
+    Useful for local dev where Celery Beat might not be running.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        from .tasks import execute_monthly_draw
+        result = execute_monthly_draw() # Call the task function directly
+        return Response({"status": "Check completed", "result": result})
+
+class AdminDrawHistoryView(generics.ListAPIView):
+    """
+    List all past draw rounds (completed or running).
+    """
+    queryset = DrawRound.objects.filter(status__in=['completed', 'running']).order_by('-draw_date')
+    serializer_class = DrawRoundSerializer
+    permission_classes = [permissions.IsAdminUser]

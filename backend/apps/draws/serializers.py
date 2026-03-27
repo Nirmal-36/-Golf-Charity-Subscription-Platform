@@ -12,8 +12,8 @@ class AdminAuditLogSerializer(serializers.ModelSerializer):
 class DrawRoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = DrawRound
-        fields = ['id', 'draw_date', 'status', 'total_pool', 'jackpot_amount', 'jackpot_rolled_over', 'winning_numbers']
-        read_only_fields = ['jackpot_amount', 'winning_numbers', 'status']
+        fields = ['id', 'draw_date', 'status', 'total_pool', 'jackpot_amount', 'jackpot_rolled_over', 'winning_numbers', 'logic_type', 'is_published']
+        read_only_fields = ['winning_numbers', 'status']
 
 class DrawEntrySerializer(serializers.ModelSerializer):
     class Meta:

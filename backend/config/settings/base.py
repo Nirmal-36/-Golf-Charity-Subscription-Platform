@@ -125,9 +125,9 @@ CELERY_TIMEZONE = TIME_ZONE
 # Celery Beat Schedule
 from celery.schedules import crontab
 CELERY_BEAT_SCHEDULE = {
-    'execute-monthly-draw': {
+    'execute-scheduled-draws-heartbeat': {
         'task': 'apps.draws.tasks.execute_monthly_draw',
-        'schedule': crontab(day_of_month=1, hour=12, minute=0),  # 1st of every month at noon
+        'schedule': crontab(minute='*'),  # Every minute heartbeat to check for overdue draws
     },
 }
 

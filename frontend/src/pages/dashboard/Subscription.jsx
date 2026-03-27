@@ -11,8 +11,11 @@ const Subscription = () => {
   const [error, setError] = useState(null);
   const [planType, setPlanType] = useState('monthly');
 
-  // If user is already active (and it's not a staff overriding it), redirect to dashboard
-  if (user?.subscription_status === 'active' && !user?.is_staff) {
+  if (user?.is_staff) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  if (user?.subscription_status === 'active') {
     return <Navigate to="/" />;
   }
 

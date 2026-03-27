@@ -73,8 +73,9 @@ class MyDrawHistoryView(generics.ListAPIView):
 class DrawResultsView(generics.RetrieveAPIView):
     """
     View the winning numbers and winners for a specific draw.
+    Only allows access once Results are officially published.
     """
-    queryset = DrawRound.objects.filter(status='completed')
+    queryset = DrawRound.objects.filter(status='completed', is_published=True)
     serializer_class = DrawRoundSerializer
     permission_classes = [permissions.AllowAny]
 

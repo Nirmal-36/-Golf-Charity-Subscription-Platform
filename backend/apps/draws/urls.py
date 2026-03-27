@@ -4,7 +4,8 @@ from .winner_views import UploadProofView, MyWinsView
 from .admin_views import (
     AdminStatsView, AdminPendingWinnersView, AdminApproveWinnerView, 
     AdminUsersListView, AdminPayoutsView, AdminAuditLogListView,
-    AdminDrawDetailView, AdminManualDrawTriggerView, AdminPayWinnerView
+    AdminDrawDetailView, AdminManualDrawTriggerView, AdminPayWinnerView,
+    AdminPublishDrawView, AdminOverdueDrawCheckView, AdminDrawHistoryView
 )
 
 urlpatterns = [
@@ -27,4 +28,7 @@ urlpatterns = [
     path('admin/audit-logs/', AdminAuditLogListView.as_view(), name='admin-audit-logs'),
     path('admin/draws/<int:pk>/', AdminDrawDetailView.as_view(), name='admin-draw-detail'),
     path('admin/draws/<int:pk>/trigger/', AdminManualDrawTriggerView.as_view(), name='admin-draw-trigger'),
+    path('admin/draws/sync/', AdminOverdueDrawCheckView.as_view(), name='admin-draw-sync'),
+    path('admin/draws/history/', AdminDrawHistoryView.as_view(), name='admin-draw-history'),
+    path('admin/draws/<int:pk>/publish/', AdminPublishDrawView.as_view(), name='admin-draw-publish'),
 ]

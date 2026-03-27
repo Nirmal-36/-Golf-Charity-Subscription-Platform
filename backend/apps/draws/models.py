@@ -8,8 +8,15 @@ class DrawRound(models.Model):
         ('completed', 'Completed')
     ]
     
+    LOGIC_CHOICES = [
+        ('random', 'Random (Lottery)'),
+        ('weighted', 'Algorithmic (Weighted)')
+    ]
+    
     draw_date = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
+    logic_type = models.CharField(max_length=20, choices=LOGIC_CHOICES, default='random')
+    is_published = models.BooleanField(default=False)
     total_pool = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     jackpot_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     jackpot_rolled_over = models.BooleanField(default=False)

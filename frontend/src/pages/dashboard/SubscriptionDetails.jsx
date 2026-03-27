@@ -2,12 +2,16 @@ import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCard, Heart, Calendar, ArrowRight, ShieldCheck, Award, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import SubscriptionBadge from '../../components/SubscriptionBadge';
 import api from '../../api/axios';
 
 const SubscriptionDetails = () => {
   const { user, setUser } = useAuth();
+  
+  if (user?.is_staff) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState(null);

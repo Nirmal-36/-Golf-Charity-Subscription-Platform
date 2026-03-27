@@ -110,7 +110,7 @@ const AdminUsers = () => {
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">User</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Account</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Donated</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
@@ -121,7 +121,9 @@ const AdminUsers = () => {
                 <tr key={user.id} className="hover:bg-gray-50/50 transition">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center font-bold">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                        user.is_staff ? 'bg-orange-100 text-orange-600' : 'bg-brand-green/10 text-brand-green'
+                      }`}>
                         {user.username[0].toUpperCase()}
                       </div>
                       <div>
@@ -132,16 +134,29 @@ const AdminUsers = () => {
                       </div>
                     </div>
                   </td>
+                  <td className="px-6 py-4">
+                     <span className={`px-2 py-1 rounded-lg font-black text-[9px] uppercase tracking-widest ${
+                       user.is_staff ? 'bg-orange-100 text-orange-600' : 
+                       user.user_role === 'organization' ? 'bg-blue-100 text-blue-600' : 
+                       'bg-gray-100 text-gray-600'
+                     }`}>
+                       {user.is_staff ? 'Administrator' : 
+                        user.user_role === 'organization' ? 'Organization' : 
+                        'Supporter'}
+                     </span>
+                  </td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex flex-col gap-1">
-                      <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1 w-max ${
-                        user.subscription_status === 'active' 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-red-100 text-red-700'
-                      }`}>
-                        <CreditCard size={10} />
-                        {user.subscription_status === 'active' ? 'Active Sub' : 'Lapsed Sub'}
-                      </span>
+                      {!user.is_staff && (
+                        <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1 w-max ${
+                          user.subscription_status === 'active' 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-red-100 text-red-700'
+                        }`}>
+                          <CreditCard size={10} />
+                          {user.subscription_status === 'active' ? 'Active Sub' : 'Lapsed Sub'}
+                        </span>
+                      )}
                       <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1 w-max ${
                         user.is_active 
                           ? 'bg-blue-100 text-blue-700' 
