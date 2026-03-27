@@ -4,11 +4,13 @@ import { useScores } from '../../hooks/useScores';
 import api from '../../api/axios';
 import { ArrowLeft, CheckCircle2, Trophy, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import CustomDatePicker from '../../components/ui/CustomDatePicker';
 
 const ScoreSubmit = () => {
   const { id } = useParams();
   const { addScore } = useScores();
   const [score, setScore] = useState('');
+  const [playedAt, setPlayedAt] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(!!id);
   const [error, setError] = useState(null);
@@ -23,6 +25,9 @@ const ScoreSubmit = () => {
         try {
           const response = await api.get(`/api/scores/${id}/`);
           setScore(response.data.score);
+          if (response.data.played_at) {
+            setPlayedAt(response.data.played_at);
+          }
         } catch (err) {
           setError('Failed to load score data.');
         } finally {
@@ -42,10 +47,13 @@ const ScoreSubmit = () => {
 
     try {
       if (isEdit) {
-        await api.patch(`/api/scores/${id}/`, { score: parseInt(score, 10) });
+        await api.patch(`/api/scores/${id}/`, { 
+          score: parseInt(score, 10),
+          played_at: playedAt
+        });
         setSuccess(true);
       } else {
-        const result = await addScore(parseInt(score, 10));
+        const result = await addScore(parseInt(score, 10), playedAt);
         if (result) setSuccess(true);
       }
       
@@ -102,7 +110,7 @@ const ScoreSubmit = () => {
         <p className="text-gray-500 mb-10 font-medium leading-relaxed">
           {isEdit 
             ? 'Adjust your score for this specific round. This will instantly refresh your rolling average.' 
-            : "Enter your Stableford score for today's play. We'll automatically update your handicap."}
+            : "Enter your Stableford score and the date of your play. We'll automatically update your handicap."}
         </p>
 
         {error && (
@@ -112,18 +120,28 @@ const ScoreSubmit = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">Stableford Score (1 - 45)</label>
-            <input
-              type="number"
-              className="w-full text-center text-5xl font-black border-2 border-gray-100 bg-brand-light/30 rounded-3xl p-8 focus:border-brand-green focus:bg-white focus:ring-0 outline-none transition"
-              value={score}
-              onChange={(e) => setScore(e.target.value)}
-              min="1"
-              max="45"
-              required
-              placeholder="0"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">Stableford Score</label>
+              <input
+                type="number"
+                className="w-full text-center text-4xl font-black border-2 border-gray-100 bg-brand-light/30 rounded-3xl p-6 focus:border-brand-green focus:bg-white focus:ring-0 outline-none transition"
+                value={score}
+                onChange={(e) => setScore(e.target.value)}
+                min="1"
+                max="45"
+                required
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <CustomDatePicker 
+                label="Date Played" 
+                value={playedAt} 
+                onChange={(date) => setPlayedAt(date)} 
+                required 
+              />
+            </div>
           </div>
 
           <button

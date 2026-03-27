@@ -52,7 +52,7 @@ const Footer = () => {
               <li><Link to="/draw" className="hover:text-brand-green transition-colors">Monthly Draws</Link></li>
               <li><Link to="/faq" className="hover:text-brand-green transition-colors">Common Questions</Link></li>
               {!user?.is_staff && (
-                <li><Link to="/charity-registration" className="hover:text-brand-green transition-colors font-bold text-brand-green/80">Partner with Us</Link></li>
+                <li><Link to="/register/organization" className="hover:text-brand-green transition-colors font-bold text-brand-green/80">Partner with Us</Link></li>
               )}
             </ul>
           </div>

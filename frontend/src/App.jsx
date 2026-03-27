@@ -9,8 +9,8 @@ import ExploreCharities from './pages/charity/ExploreCharities';
 import Membership from './pages/public/Membership';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import OrganizationRegister from './pages/auth/OrganizationRegister';
 import StaticPage from './pages/public/StaticPage';
-import CharityRegister from './pages/auth/CharityRegister';
 
 // Subscriber Pages
 import Dashboard from './pages/dashboard/Dashboard';
@@ -24,6 +24,9 @@ import DrawHistory from './pages/draw/DrawHistory';
 import MyWins from './pages/draw/MyWins';
 import SubscriptionDetails from './pages/dashboard/SubscriptionDetails';
 import Profile from './pages/dashboard/Profile';
+import OrganizationDashboard from './pages/organization/OrganizationDashboard';
+import OrganizationProfile from './pages/organization/OrganizationProfile';
+import OrganizationDonations from './pages/organization/OrganizationDonations';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -39,7 +42,17 @@ import AdminDraws from './pages/admin/AdminDraws';
 const AdminRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (!user || !user.is_staff) return <Navigate to="/" />;
+  if (!user || (user.user_role !== 'admin' && !user.is_staff)) return <Navigate to="/" />;
+  return children;
+};
+
+/**
+ * Protected Route for Organization Partners only
+ */
+const PartnerRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user || user.user_role !== 'organization') return <Navigate to="/" />;
   return children;
 };
 
@@ -51,9 +64,26 @@ const ProtectedRoute = ({ children }) => {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-brand-light"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-green"></div></div>;
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   
-  // If user is authenticated but not active (and not staff), redirect to subscription page
-  // ALLOW access to subscription details so they can see history and sub options
-  if (user.subscription_status !== 'active' && !user.is_staff) {
+  const playerOnlyPaths = ['/dashboard', '/scores/submit', '/scores/edit', '/subscribe', '/draw', '/draw/history', '/my-wins'];
+  const isPlayerOnly = playerOnlyPaths.some(path => location.pathname.startsWith(path));
+
+  // Organizations and Admins bypass the subscription check but are redirected from player-only routes
+  if (user.user_role === 'organization') {
+    if (isPlayerOnly) {
+      return <Navigate to="/org/dashboard" replace />;
+    }
+    return children;
+  }
+  
+  if (user.user_role === 'admin' || user.is_staff) {
+    if (isPlayerOnly) {
+       return <Navigate to="/admin/dashboard" replace />;
+    }
+    return children;
+  }
+  
+  // If user is authenticated but not active, redirect to subscription page
+  if (user.subscription_status !== 'active') {
     const allowedPaths = ['/subscribe', '/subscription/details', '/charities'];
     if (!allowedPaths.includes(location.pathname)) {
       return <Navigate to="/subscribe" />;
@@ -77,7 +107,7 @@ function App() {
           <Route path="/membership" element={<Membership />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/charity-registration" element={<CharityRegister />} />
+          <Route path="/register/organization" element={<OrganizationRegister />} />
           
           {/* Static Content Routes */}
           <Route path="/about" element={<StaticPage title="Our Mission" description="Driving change through every swing." />} />
@@ -110,6 +140,11 @@ function App() {
           <Route path="/draw/history" element={<ProtectedRoute><DrawHistory /></ProtectedRoute>} />
           <Route path="/my-wins" element={<ProtectedRoute><MyWins /></ProtectedRoute>} />
           
+          {/* Partner Routes */}
+          <Route path="/org/dashboard" element={<PartnerRoute><OrganizationDashboard /></PartnerRoute>} />
+          <Route path="/org/profile" element={<PartnerRoute><OrganizationProfile /></PartnerRoute>} />
+          <Route path="/org/donations" element={<PartnerRoute><OrganizationDonations /></PartnerRoute>} />
+
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />

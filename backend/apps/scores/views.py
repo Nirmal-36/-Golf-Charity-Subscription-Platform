@@ -12,7 +12,7 @@ class ActiveScoreListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return GolfScore.objects.filter(user=self.request.user, is_active=True).order_by('-submitted_at')
+        return GolfScore.objects.filter(user=self.request.user, is_active=True).order_by('-played_at', '-submitted_at')
 
 class ScoreHistoryListView(generics.ListAPIView):
     """List the full score history for the authenticated user"""
@@ -20,7 +20,7 @@ class ScoreHistoryListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return GolfScore.objects.filter(user=self.request.user).order_by('-submitted_at')
+        return GolfScore.objects.filter(user=self.request.user).order_by('-played_at', '-submitted_at')
 
 class ScoreSubmitView(APIView):
     """Submit a new score. Requires active subscription."""
@@ -30,7 +30,8 @@ class ScoreSubmitView(APIView):
         serializer = ScoreSubmitSerializer(data=request.data)
         if serializer.is_valid():
             score_value = serializer.validated_data['score']
-            new_score = add_score(request.user, score_value)
+            played_at = serializer.validated_data.get('played_at')
+            new_score = add_score(request.user, score_value, played_at=played_at)
             return Response(
                 GolfScoreSerializer(new_score).data,
                 status=status.HTTP_201_CREATED

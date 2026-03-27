@@ -23,14 +23,19 @@ const Navbar = () => {
   }, []);
 
   const navigation = user 
-    ? (user.is_staff 
+    ? (user.user_role === 'admin' || user.is_staff
         ? [
             { name: 'Admin Hub', href: '/admin/dashboard', icon: LayoutDashboard },
             { name: 'Users', href: '/admin/users', icon: User },
             { name: 'Charities', href: '/admin/charities', icon: Heart },
             { name: 'Draws', href: '/admin/draws', icon: Target },
             { name: 'Payouts', href: '/admin/payouts', icon: CreditCard },
-            { name: 'Audit Logs', href: '/admin/logs', icon: Menu },
+          ]
+        : user.user_role === 'organization'
+        ? [
+            { name: 'Partner Hub', href: '/org/dashboard', icon: LayoutDashboard },
+            { name: 'My Profile', href: '/org/profile', icon: Heart },
+            { name: 'Donations', href: '/org/donations', icon: CreditCard },
           ]
         : [
             { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -88,7 +93,13 @@ const Navbar = () => {
                   </div>
                   <div className="text-left hidden lg:block">
                     <p className="text-sm font-bold text-brand-dark leading-none">{user.username}</p>
-                    <p className="text-[10px] text-gray-400 mt-1 font-black uppercase tracking-widest">{user.is_staff ? 'Administrator' : (user.subscription_status === 'active' ? 'Active Pro' : 'Subscriber')}</p>
+                    <p className="text-[10px] text-gray-400 mt-1 font-black uppercase tracking-widest">
+                      {user.user_role === 'admin' || user.is_staff 
+                        ? 'Administrator' 
+                        : user.user_role === 'organization' 
+                        ? 'Charity Partner' 
+                        : (user.subscription_status === 'active' ? 'Active Pro' : 'Subscriber')}
+                    </p>
                   </div>
                 </button>
 
@@ -110,15 +121,23 @@ const Navbar = () => {
                             <p className="text-xs text-gray-500 truncate">{user.email}</p>
                           </div>
                         </div>
-                        <SubscriptionBadge status={user.subscription_status} />
+                        {user.user_role === 'member' && <SubscriptionBadge status={user.subscription_status} />}
+                        {user.user_role === 'organization' && (
+                          <div className="mt-2 py-1 px-3 bg-brand-green/10 text-brand-green text-[10px] font-bold rounded-full inline-block uppercase tracking-wider">
+                            Verified Partner
+                          </div>
+                        )}
                       </div>
 
                       <div className="p-2">
                         <DropdownLink to="/profile" icon={UserCircle} label="Account Settings" onClick={() => setIsProfileOpen(false)} />
-                        {!user.is_staff && (
+                        {user.user_role === 'member' && (
                           <DropdownLink to="/subscription/details" icon={CreditCard} label="Membership & Billing" onClick={() => setIsProfileOpen(false)} />
                         )}
-                        {user.is_staff && (
+                        {user.user_role === 'organization' && (
+                          <DropdownLink to="/org/dashboard" icon={LayoutDashboard} label="Partner Hub" onClick={() => setIsProfileOpen(false)} />
+                        )}
+                        {(user.user_role === 'admin' || user.is_staff) && (
                           <DropdownLink to="/admin/dashboard" icon={LayoutDashboard} label="Admin Terminal" onClick={() => setIsProfileOpen(false)} />
                         )}
                       </div>

@@ -6,7 +6,8 @@ from django.contrib.auth import get_user_model
 from .serializers import (
     UserSerializer, 
     RegisterSerializer, 
-    CustomTokenObtainPairSerializer
+    CustomTokenObtainPairSerializer,
+    OrganizationRegisterSerializer
 )
 
 User = get_user_model()
@@ -15,6 +16,11 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
     serializer_class = RegisterSerializer
+
+class OrganizationRegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = OrganizationRegisterSerializer
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer

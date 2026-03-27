@@ -2,12 +2,18 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { Search, User, Mail, CreditCard, Heart, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import CustomSelect from '../../components/ui/CustomSelect';
+import CustomModal from '../../components/ui/CustomModal';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all'); // all, active, lapsed, inactive
+  
+  // Modal States
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
 
   const fetchUsers = async () => {
     try {
@@ -29,10 +35,10 @@ const AdminUsers = () => {
     }
   };
 
-  const handleDelete = async (userId) => {
-    if (!window.confirm("Are you sure you want to PERMANENTLY delete this user? This cannot be undone.")) return;
+  const handleDelete = async () => {
+    if (!userToDelete) return;
     try {
-      await api.delete(`/api/auth/admin/users/${userId}/`);
+      await api.delete(`/api/auth/admin/users/${userToDelete}/`);
       fetchUsers();
     } catch (err) {
       alert("Failed to delete user.");
@@ -85,16 +91,18 @@ const AdminUsers = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <select 
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-gray-100 px-4 py-2 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-green border-none transition cursor-pointer"
-          >
-            <option value="all">All Users</option>
-            <option value="active">Active Subscriptions</option>
-            <option value="lapsed">Lapsed Subscriptions</option>
-            <option value="inactive">Deactivated Accounts</option>
-          </select>
+          <div className="w-56">
+            <CustomSelect 
+              value={filterStatus}
+              options={[
+                { value: 'all', label: 'All Users' },
+                { value: 'active', label: 'Active Subscriptions' },
+                { value: 'lapsed', label: 'Lapsed Subscriptions' },
+                { value: 'inactive', label: 'Deactivated Accounts' }
+              ]}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* User Table */}
@@ -157,8 +165,11 @@ const AdminUsers = () => {
                       >
                         {user.is_active ? 'Deactivate' : 'Activate'}
                       </button>
-                      <button 
-                        onClick={() => handleDelete(user.id)}
+                       <button 
+                        onClick={() => {
+                          setUserToDelete(user.id);
+                          setIsDeleteModalOpen(true);
+                        }}
                         className="text-red-600 font-bold hover:underline"
                       >
                         Delete
@@ -175,6 +186,16 @@ const AdminUsers = () => {
         </div>
 
       </div>
+
+      <CustomModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete User"
+        message="Are you sure you want to PERMANENTLY delete this user? This action is irreversible and will remove all their data."
+        type="confirm"
+        confirmText="Delete User"
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

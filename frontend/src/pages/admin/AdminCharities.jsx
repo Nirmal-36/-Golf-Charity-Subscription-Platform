@@ -3,6 +3,9 @@ import api from '../../api/axios';
 import { Link } from 'react-router-dom';
 import { Heart, Plus, Edit, Trash2, ArrowLeft, Globe, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
+import CustomSelect from '../../components/ui/CustomSelect';
+import { CHARITY_CATEGORIES } from '../../utils/constants';
+import CustomModal from '../../components/ui/CustomModal';
 
 const AdminCharities = () => {
   const [charities, setCharities] = useState([]);
@@ -16,6 +19,10 @@ const AdminCharities = () => {
     logo_url: ''
   });
   const [activeTab, setActiveTab] = useState('all'); // 'all' or 'pending'
+  
+  // Modal States
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [charityToDelete, setCharityToDelete] = useState(null);
 
   const fetchCharities = async () => {
     try {
@@ -53,10 +60,10 @@ const AdminCharities = () => {
     }
   };
 
-  const handleDelete = async (charityId) => {
-    if (!window.confirm("Are you sure? This will remove the charity from the directory.")) return;
+  const handleDelete = async () => {
+    if (!charityToDelete) return;
     try {
-      await api.delete(`/api/charities/admin/${charityId}/`);
+      await api.delete(`/api/charities/admin/${charityToDelete}/`);
       fetchCharities();
     } catch (err) {
       alert("Failed to delete charity.");
@@ -156,7 +163,14 @@ const AdminCharities = () => {
                    <button onClick={() => openEditModal(charity)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-brand-gold transition" title="Edit Charity">
                       <Edit size={18} />
                    </button>
-                   <button onClick={() => handleDelete(charity.id)} className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition" title="Delete Charity">
+                   <button 
+                     onClick={() => {
+                       setCharityToDelete(charity.id);
+                       setIsDeleteModalOpen(true);
+                     }} 
+                     className="p-2 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition" 
+                     title="Delete Charity"
+                   >
                       <Trash2 size={18} />
                    </button>
                 </div>
@@ -240,23 +254,14 @@ const AdminCharities = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Category</label>
-                    <select 
-                      required
+                    <CustomSelect 
+                      label="Category"
+                      name="category"
                       value={formData.category}
+                      options={CHARITY_CATEGORIES}
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
-                      className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-green/20 focus:bg-white rounded-2xl p-4 outline-none transition font-medium appearance-none"
-                    >
-                      <option value="">Select Category</option>
-                      <option value="Healthcare">Healthcare</option>
-                      <option value="Education">Education</option>
-                      <option value="Environment">Environment</option>
-                      <option value="Disaster Relief">Disaster Relief</option>
-                      <option value="Youth Support">Youth Support</option>
-                      <option value="Animal Welfare">Animal Welfare</option>
-                    </select>
-                  </div>
+                      required
+                    />
                   <div>
                     <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Logo URL</label>
                     <input 
@@ -300,6 +305,16 @@ const AdminCharities = () => {
             </div>
           </div>
         )}
+
+        <CustomModal 
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          title="Delete Charity"
+          message="Are you sure you want to delete this charity? This will remove it from the directory and cannot be undone."
+          type="confirm"
+          confirmText="Delete Charity"
+          onConfirm={handleDelete}
+        />
 
       </div>
     </div>

@@ -19,10 +19,13 @@ export const useScores = () => {
     }
   }, []);
 
-  const addScore = async (score) => {
+  const addScore = async (score, playedAt = null) => {
     setLoading(true);
     try {
-      await api.post('/api/scores/add/', { score });
+      const payload = { score };
+      if (playedAt) payload.played_at = playedAt;
+      
+      await api.post('/api/scores/add/', payload);
       await fetchActiveScores(); // Refresh the active window
       return true;
     } catch (err) {

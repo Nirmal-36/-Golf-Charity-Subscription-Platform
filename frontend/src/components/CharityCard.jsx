@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
+import { resolveImageUrl } from '../utils/image';
+import { getCategoryIcon } from '../utils/icons';
 
 const CharityCard = ({ charity, onSelect, isSelected }) => {
   return (
@@ -18,12 +20,21 @@ const CharityCard = ({ charity, onSelect, isSelected }) => {
       )}
       
       <div className="h-32 bg-gray-100 flex items-center justify-center p-4">
-        {charity.logo_url ? (
-          <img src={charity.logo_url} alt={charity.name} className="max-h-full object-contain mix-blend-multiply" />
+        {charity.logo_image || charity.logo_url ? (
+          <img 
+            src={resolveImageUrl(charity.logo_image || charity.logo_url)} 
+            alt={charity.name} 
+            className="max-h-full object-contain mix-blend-multiply" 
+          />
         ) : (
-          <div className="w-16 h-16 rounded-full bg-brand-green/20 flex items-center justify-center text-brand-green font-bold text-xl">
-            {charity.name.charAt(0)}
-          </div>
+          (() => {
+            const Icon = getCategoryIcon(charity.category);
+            return (
+              <div className="w-16 h-16 rounded-full bg-brand-green/10 flex items-center justify-center text-brand-green">
+                <Icon size={32} strokeWidth={1.5} />
+              </div>
+            );
+          })()
         )}
       </div>
       

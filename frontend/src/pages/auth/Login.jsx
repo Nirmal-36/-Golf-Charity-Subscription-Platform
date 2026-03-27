@@ -16,8 +16,10 @@ const Login = () => {
     setError('');
     try {
       const res = await login(email, password);
-      if (res.user.is_staff) {
+      if (res.user.is_staff || res.user.user_role === 'admin') {
         navigate('/admin/dashboard');
+      } else if (res.user.user_role === 'organization') {
+        navigate('/org/dashboard');
       } else {
         navigate('/dashboard');
       }

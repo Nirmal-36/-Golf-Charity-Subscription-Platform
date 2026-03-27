@@ -5,6 +5,8 @@ import { Link, Navigate } from 'react-router-dom';
 import { Trophy, Heart, ArrowRight, UserCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SubscriptionBadge from '../../components/SubscriptionBadge';
+import { getCategoryIcon } from '../../utils/icons';
+import { resolveImageUrl } from '../../utils/image';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -138,13 +140,25 @@ const Dashboard = () => {
               <div className="text-sm text-gray-500">Total Donated to Date</div>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-4 mb-4">
-              <div className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Supported Charity</div>
+            <div className="bg-gray-50 rounded-xl p-5 mb-4 border border-gray-100">
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4">Supported Charity</div>
               {user?.selected_charity_name ? (
-                <>
-                  <div className="font-bold text-brand-dark">{user.selected_charity_name}</div>
-                  <div className="text-sm text-gray-600 mt-1">Receiving {user.donation_percentage}% of your fee.</div>
-                </>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {user.selected_charity_logo ? (
+                      <img src={resolveImageUrl(user.selected_charity_logo)} alt={user.selected_charity_name} className="w-full h-full object-contain p-1" />
+                    ) : (
+                      (() => {
+                        const Icon = getCategoryIcon(user.selected_charity_category);
+                        return <Icon size={24} className="text-brand-green/40" />;
+                      })()
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-bold text-brand-dark leading-tight">{user.selected_charity_name}</div>
+                    <div className="text-[10px] font-black text-brand-green uppercase tracking-widest mt-1">{user.selected_charity_category}</div>
+                  </div>
+                </div>
               ) : (
                 <div className="text-sm text-gray-500 italic">No charity selected yet.</div>
               )}

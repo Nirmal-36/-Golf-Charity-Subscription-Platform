@@ -38,6 +38,11 @@ export const AuthProvider = ({ children }) => {
     return res.data;
   };
 
+  const registerOrganization = async (orgData) => {
+    const res = await api.post('/api/auth/register/organization/', orgData);
+    return res.data;
+  };
+
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -45,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, register, logout, checkUser, loading }}>
+    <AuthContext.Provider value={{ user, setUser, login, register, registerOrganization, logout, checkUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

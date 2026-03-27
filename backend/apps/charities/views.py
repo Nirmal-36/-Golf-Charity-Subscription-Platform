@@ -4,6 +4,8 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .models import Charity
 from .serializers import CharitySerializer, SelectCharitySerializer
+from apps.subscriptions.models import Donation
+from apps.subscriptions.serializers import DonationSerializer
 
 class CharityListView(generics.ListAPIView):
     """List all active charities"""
@@ -76,4 +78,52 @@ class CharityRegisterView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         # All public applications are disabled by default until admin review
-        serializer.save(is_active=False)
+        charity = serializer.save(is_active=False)
+        
+        # Send Welcome Email if contact_email is provided
+        if charity.contact_email:
+            from apps.core.emails import send_charity_welcome_email
+            send_charity_welcome_email.delay(charity.contact_email, charity.name)
+
+class MyCharityProfileView(APIView):
+    """Returns the charity profile managed by the authenticated user"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        charity = Charity.objects.filter(managed_by=request.user).first()
+        if not charity:
+            return Response(
+                {"detail": "No charity profile linked to this account."}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = CharitySerializer(charity)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        charity = Charity.objects.filter(managed_by=request.user).first()
+        if not charity:
+            return Response(
+                {"detail": "No charity profile linked to this account."}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Explicitly handle logo removal if logo_image is sent as an empty string
+        data = request.data.copy()
+        if 'logo_image' in data and data['logo_image'] == '':
+            charity.logo_image.delete(save=False)
+            data['logo_image'] = None
+
+        serializer = CharitySerializer(charity, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CharityDonationsView(generics.ListAPIView):
+    """Returns all donations directed to the authenticated user's charity"""
+    serializer_class = DonationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        charity = get_object_or_404(Charity, managed_by=self.request.user)
+        return Donation.objects.filter(charity=charity).order_by('-timestamp')

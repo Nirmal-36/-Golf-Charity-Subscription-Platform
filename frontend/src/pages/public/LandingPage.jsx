@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Trophy, Heart, Target, ChevronRight, CheckCircle2, ShieldCheck, Zap, Coins, Calculator, History } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { getCategoryIcon } from '../../utils/icons';
+import { resolveImageUrl } from '../../utils/image';
 
 const LandingPage = () => {
   const { user } = useAuth();
@@ -16,11 +18,23 @@ const LandingPage = () => {
     visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: 'easeOut' } }
   };
 
-  const charities = [
-    { name: 'Red Cross Golf Fund', category: 'Humanitarian', impact: '$12,400' },
-    { name: 'Pure Water Initiative', category: 'Environment', impact: '$8,200' },
-    { name: 'Junior Golf Scholars', category: 'Education', impact: '$15,900' }
-  ];
+  const [charities, setCharities] = React.useState([]);
+  const [loadingCharities, setLoadingCharities] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchCharities = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}/api/charities/`);
+        const data = await res.json();
+        setCharities(data.slice(0, 3)); // Just show top 3
+      } catch (err) {
+        console.error("Failed to load charities", err);
+      } finally {
+        setLoadingCharities(false);
+      }
+    };
+    fetchCharities();
+  }, []);
 
   return (
     <div className="bg-white overflow-hidden">
@@ -219,7 +233,7 @@ const LandingPage = () => {
                 {!user?.is_staff && (
                   <>
                     <br /><br />
-                    <Link to="/charity-registration" className="text-brand-gold hover:underline font-bold flex items-center gap-2">
+                    <Link to="/register/organization" className="text-brand-gold hover:underline font-bold flex items-center gap-2">
                       Partner with us <ChevronRight size={16} />
                     </Link>
                   </>
@@ -239,17 +253,35 @@ const LandingPage = () => {
             </div>
 
             <div className="grid grid-cols-1 gap-6">
-              {charities.map((charity, i) => (
+              {loadingCharities ? (
+                <div className="text-gray-500 animate-pulse">Loading partner impact...</div>
+              ) : charities.map((charity, i) => (
                 <motion.div 
                   key={i}
                   whileHover={{ x: 10 }}
-                  className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm"
+                  className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm flex gap-6 items-center"
                 >
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="px-3 py-1 bg-brand-green/20 text-brand-green text-xs font-black uppercase tracking-widest rounded-full">{charity.category}</span>
-                    <span className="text-brand-gold font-black">{charity.impact} Raised</span>
+                  <div className="w-16 h-16 bg-white/10 rounded-2xl flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    {charity.logo_image || charity.logo_url ? (
+                      <img 
+                        src={resolveImageUrl(charity.logo_image || charity.logo_url)} 
+                        alt={charity.name} 
+                        className="max-h-12 object-contain filter invert opacity-80" 
+                      />
+                    ) : (
+                      (() => {
+                        const Icon = getCategoryIcon(charity.category);
+                        return <Icon size={32} className="text-brand-gold opacity-80" strokeWidth={1.5} />;
+                      })()
+                    )}
                   </div>
-                  <h4 className="text-xl font-bold">{charity.name}</h4>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-brand-green">{charity.category}</span>
+                      <span className="text-brand-gold font-black text-sm">${charity.total_received}</span>
+                    </div>
+                    <h4 className="text-xl font-bold">{charity.name}</h4>
+                  </div>
                 </motion.div>
               ))}
             </div>

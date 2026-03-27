@@ -7,24 +7,31 @@ class GolfScore(models.Model):
     score = models.PositiveIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(45)]
     )
+    played_at = models.DateField(null=True, blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     
+    class Meta:
+        ordering = ['-played_at', '-submitted_at']
+
     def save(self, *args, **kwargs):
+        if not self.played_at:
+            from django.utils import timezone
+            self.played_at = timezone.now().date()
+            
         is_new = self.pk is None
         super().save(*args, **kwargs)
         
         if is_new:
-            # Maintain only top 5 active scores for this user
+            # Maintain only top 5 active scores for this user basing on played_at date
             active_scores = GolfScore.objects.filter(
                 user=self.user, 
                 is_active=True
-            ).order_by('-submitted_at')
+            ).order_by('-played_at', '-submitted_at')
             
             if active_scores.count() > 5:
                 # Deactivate all but the latest 5
                 scores_to_deactivate = active_scores[5:]
-                # We need to perform an update on the queryset to avoid recursion
                 GolfScore.objects.filter(id__in=[s.id for s in scores_to_deactivate]).update(is_active=False)
 
     def __str__(self):

@@ -9,7 +9,8 @@ const Register = () => {
     email: '',
     password: '',
     first_name: '',
-    last_name: ''
+    last_name: '',
+    user_role: 'member'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);

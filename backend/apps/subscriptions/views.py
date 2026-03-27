@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from apps.accounts.models import User
 from apps.draws.models import DrawRound
 from apps.charities.models import Charity
+from .models import Donation
 from .services import create_checkout_session
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -206,6 +207,15 @@ class StripeWebhookView(APIView):
                     charity.save()
                     
                     user.total_donated = float(user.total_donated) + charity_allocation
+                    
+                    # 3. Create Donation record (Phase 21)
+                    Donation.objects.create(
+                        user=user,
+                        charity=charity,
+                        amount=charity_allocation,
+                        plan_type=user.subscription_plan,
+                        stripe_invoice_id=invoice.get('id', '')
+                    )
                 
                 user.save()
                 print(f"FINANCIAL SPLIT COMPLETE: ${prize_allocation} to Prize, ${charity_allocation} to {user.selected_charity.name if user.selected_charity else 'None'}")

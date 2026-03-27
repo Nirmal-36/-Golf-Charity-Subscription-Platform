@@ -3,12 +3,18 @@ import { motion } from 'framer-motion';
 import api from '../../api/axios';
 import { Link } from 'react-router-dom';
 import { Target, Calendar, Trophy, Zap, ArrowLeft, AlertCircle } from 'lucide-react';
+import CustomModal from '../../components/ui/CustomModal';
 
 const AdminDraws = () => {
   const [currentDraw, setCurrentDraw] = useState(null);
   const [drawResults, setDrawResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [executing, setExecuting] = useState(false);
+
+  // Modal States
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [newJackpot, setNewJackpot] = useState('');
+  const [isConfirmTriggerOpen, setIsConfirmTriggerOpen] = useState(false);
 
   const fetchDrawData = async () => {
     try {
@@ -26,7 +32,6 @@ const AdminDraws = () => {
   }, []);
 
   const handleUpdateDraw = async () => {
-    const newJackpot = window.prompt("New Jackpot Amount:", currentDraw.jackpot_amount);
     if (!newJackpot) return;
     try {
       await api.patch(`/api/draws/admin/draws/${currentDraw.id}/`, { 
@@ -39,8 +44,6 @@ const AdminDraws = () => {
   };
 
   const handleTriggerDraw = async () => {
-    if (!window.confirm("WARNING: This will manually execute the draw, pick winners, and lock the round. This cannot be undone. Proceed?")) return;
-    
     setExecuting(true);
     setDrawResults(null);
     try {
@@ -88,12 +91,15 @@ const AdminDraws = () => {
             <div className="w-full bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/10 md:w-2/4">
                <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Current Jackpot</div>
                <div className="text-4xl font-black text-brand-gold mb-4">${parseFloat(currentDraw.jackpot_amount).toLocaleString()}</div>
-               <button 
-                 onClick={handleUpdateDraw}
-                 className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition text-sm flex items-center justify-center gap-2"
-               >
-                 <Calendar size={16} /> Reschedule / Adjust
-               </button>
+                <button 
+                  onClick={() => {
+                    setNewJackpot(currentDraw.jackpot_amount);
+                    setIsUpdateModalOpen(true);
+                  }}
+                  className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition text-sm flex items-center justify-center gap-2"
+                >
+                  <Calendar size={16} /> Reschedule / Adjust
+                </button>
             </div>
           </div>
         </div>
@@ -110,7 +116,7 @@ const AdminDraws = () => {
                 Forcefully execute the draw logic right now. This will ignore the schedule, pick winners based on current entries, and move the round to 'Completed'.
               </p>
               <button 
-                onClick={handleTriggerDraw}
+                onClick={() => setIsConfirmTriggerOpen(true)}
                 disabled={executing || currentDraw.status !== 'scheduled'}
                 className="w-full py-4 bg-brand-dark text-white font-black rounded-2xl hover:bg-black transition shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -191,6 +197,29 @@ const AdminDraws = () => {
              </div>
           </div>
         )}
+
+        {/* MODALS */}
+        <CustomModal 
+          isOpen={isUpdateModalOpen}
+          onClose={() => setIsUpdateModalOpen(false)}
+          title="Update Jackpot"
+          message="Enter the new jackpot amount for this active round."
+          type="prompt"
+          inputValue={newJackpot}
+          onInputChange={setNewJackpot}
+          inputPlaceholder="e.g. 5000"
+          onConfirm={handleUpdateDraw}
+        />
+
+        <CustomModal 
+          isOpen={isConfirmTriggerOpen}
+          onClose={() => setIsConfirmTriggerOpen(false)}
+          title="Manual Draw Execution"
+          message="WARNING: This will manually execute the draw, pick winners, and lock the round. This action is permanent and cannot be undone."
+          type="confirm"
+          confirmText="Proceed with Execution"
+          onConfirm={handleTriggerDraw}
+        />
 
       </div>
     </div>

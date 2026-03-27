@@ -14,6 +14,12 @@ class User(AbstractUser):
         ('yearly', 'Yearly'),
     ]
 
+    ROLE_CHOICES = [
+        ('member', 'Member'),
+        ('organization', 'Organization'),
+        ('admin', 'Admin'),
+    ]
+
     email = models.EmailField(unique=True)
     stripe_customer_id = models.CharField(max_length=100, blank=True)
     stripe_subscription_id = models.CharField(max_length=100, blank=True)
@@ -26,6 +32,11 @@ class User(AbstractUser):
         max_length=10, 
         choices=PLAN_CHOICES, 
         blank=True
+    )
+    user_role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='member'
     )
     subscription_end_date = models.DateTimeField(null=True, blank=True)
     

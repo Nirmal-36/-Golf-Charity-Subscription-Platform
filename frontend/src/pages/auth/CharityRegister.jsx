@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import api from '../../api/axios';
 import { Link } from 'react-router-dom';
-import { Heart, Send, CheckCircle, ArrowRight, Shield, Globe, Award } from 'lucide-react';
+import { Heart, Send, CheckCircle, ArrowRight, Shield, Globe, Award, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { CHARITY_CATEGORIES } from '../../utils/constants';
+import CustomSelect from '../../components/ui/CustomSelect';
+import { resolveImageUrl } from '../../utils/image';
 
 const CharityRegister = () => {
   const [formData, setFormData] = useState({
     name: '',
+    contact_email: '',
     category: '',
     description: '',
     logo_url: ''
@@ -110,36 +114,40 @@ const CharityRegister = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Organization Name</label>
-                <input 
-                  type="text" 
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-green/20 focus:bg-white rounded-2xl p-4 lg:p-5 outline-none transition font-medium text-lg placeholder:text-gray-300 shadow-inner"
-                  placeholder="e.g. Hope Foundation"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Organization Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-green/20 focus:bg-white rounded-2xl p-4 lg:p-5 outline-none transition font-medium text-lg placeholder:text-gray-300 shadow-inner"
+                    placeholder="e.g. Hope Foundation"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Contact Email</label>
+                  <input 
+                    type="email" 
+                    required
+                    value={formData.contact_email}
+                    onChange={(e) => setFormData({...formData, contact_email: e.target.value})}
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-green/20 focus:bg-white rounded-2xl p-4 lg:p-5 outline-none transition font-medium text-lg placeholder:text-gray-300 shadow-inner"
+                    placeholder="contact@foundation.org"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Category</label>
-                  <select 
-                    required
-                    value={formData.category}
-                    onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-green/20 focus:bg-white rounded-2xl p-4 lg:p-5 outline-none transition font-medium text-lg appearance-none cursor-pointer shadow-inner"
-                  >
-                    <option value="">Select Category</option>
-                    <option value="Healthcare">Healthcare</option>
-                    <option value="Education">Education</option>
-                    <option value="Environment">Environment</option>
-                    <option value="Disaster Relief">Disaster Relief</option>
-                    <option value="Youth Support">Youth Support</option>
-                    <option value="Animal Welfare">Animal Welfare</option>
-                  </select>
-                </div>
+                <CustomSelect 
+                  label="Category"
+                  name="category"
+                  value={formData.category}
+                  options={CHARITY_CATEGORIES}
+                  onChange={(e) => setFormData({...formData, category: e.target.value})}
+                  required
+                />
                 <div>
                   <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Logo URL</label>
                   <input 
