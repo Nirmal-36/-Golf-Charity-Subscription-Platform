@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import api from '../../api/axios';
 
 const Register = () => {
   const { register } = useAuth();
@@ -20,12 +21,32 @@ const Register = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const [charities, setCharities] = useState([]);
+  const [loadingCharities, setLoadingCharities] = useState(true);
+
+  React.useEffect(() => {
+    const fetchCharities = async () => {
+      try {
+        const res = await api.get('/api/charities/');
+        setCharities(res.data);
+      } catch (err) {
+        console.error("Failed to load charities", err);
+      } finally {
+        setLoadingCharities(false);
+      }
+    };
+    fetchCharities();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
-      await register(formData);
+      await register({
+        ...formData,
+        selected_charity_id: formData.selected_charity
+      });
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.detail || 'Registration failed. Please try a different username or email.');
@@ -71,17 +92,6 @@ const Register = () => {
           </div>
           
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Username</label>
-            <input 
-              name="username"
-              className="w-full border-2 border-gray-50 rounded-xl p-3 focus:border-brand-green outline-none transition bg-gray-50/50" 
-              value={formData.username}
-              onChange={handleChange}
-              required 
-            />
-          </div>
-          
-          <div>
             <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Email</label>
             <input 
               type="email" 
@@ -91,6 +101,23 @@ const Register = () => {
               onChange={handleChange}
               required 
             />
+          </div>
+
+          <div>
+             <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Support Cause (Select Charity)</label>
+             <select 
+               name="selected_charity"
+               className="w-full border-2 border-gray-50 rounded-xl p-3 focus:border-brand-green outline-none transition bg-gray-50/50 font-bold"
+               value={formData.selected_charity}
+               onChange={handleChange}
+               required
+             >
+               <option value="">-- Choose a cause --</option>
+               {charities.map(c => (
+                 <option key={c.id} value={c.id}>{c.name} ({c.category})</option>
+               ))}
+             </select>
+             {loadingCharities && <p className="text-[10px] text-brand-green animate-pulse mt-1 ml-1 font-bold">Syncing partner list...</p>}
           </div>
           
           <div>

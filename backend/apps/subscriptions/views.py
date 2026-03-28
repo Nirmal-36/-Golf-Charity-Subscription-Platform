@@ -98,8 +98,14 @@ class StripeWebhookView(APIView):
         # Handle the event
         if event['type'] == 'checkout.session.completed':
             session = event['data']['object']
-            print(f"WEBHOOK: Handling checkout.session.completed for user_id: {session.get('metadata', {}).get('user_id')}")
-            self.handle_checkout_session(session)
+            metadata = session.get('metadata', {})
+            
+            if metadata.get('type') == 'one_time_donation':
+                print(f"WEBHOOK: Handling one_time_donation for charity_id: {metadata.get('charity_id')}")
+                self.handle_one_time_donation(session)
+            else:
+                print(f"WEBHOOK: Handling checkout.session.completed for user_id: {session.get('metadata', {}).get('user_id')}")
+                self.handle_checkout_session(session)
             
         elif event['type'] == 'invoice.payment_succeeded':
             invoice = event['data']['object']
@@ -243,3 +249,32 @@ class StripeWebhookView(APIView):
                 user.save()
             except User.DoesNotExist:
                 pass
+
+    def handle_one_time_donation(self, session):
+        metadata = session.get('metadata', {})
+        charity_id = metadata.get('charity_id')
+        amount = float(metadata.get('amount', 0))
+        customer_email = session.get('customer_details', {}).get('email')
+        
+        if charity_id:
+            try:
+                from apps.charities.models import Charity
+                from apps.accounts.models import User
+                from .models import Donation
+                
+                charity = Charity.objects.get(id=charity_id)
+                charity.total_received = float(charity.total_received) + amount
+                charity.save()
+                
+                # Create Donation record (Phase 21)
+                user = User.objects.filter(email=customer_email).first()
+                Donation.objects.create(
+                    user=user, # Can be null for guest donations
+                    charity=charity,
+                    amount=amount,
+                    plan_type='one_time',
+                    stripe_invoice_id=session.get('id', '') # For one-time, this is the session ID
+                )
+                print(f"ONE-TIME DONATION COMPLETE: ${amount} to {charity.name} from {customer_email}")
+            except Charity.DoesNotExist:
+                print(f"WEBHOOK ERROR: Charity {charity_id} not found for one-time donation.")

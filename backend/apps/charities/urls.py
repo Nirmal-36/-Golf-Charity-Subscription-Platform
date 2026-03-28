@@ -6,7 +6,8 @@ from .views import (
     UpdateDonationPercentageView,
     CharityRegisterView,
     MyCharityProfileView,
-    CharityDonationsView
+    CharityDonationsView,
+    OneTimeDonationView
 )
 from .admin_views import AdminCharityListCreateView, AdminCharityDetailView
 
@@ -23,4 +24,5 @@ urlpatterns = [
     path('admin/<int:pk>/', AdminCharityDetailView.as_view(), name='admin_charity_detail'),
     
     path('<slug:slug>/', CharityDetailView.as_view(), name='charity_detail'),
+    path('<slug:slug>/donate/', OneTimeDonationView.as_view(), name='charity_one_time_donation'),
 ]

@@ -16,10 +16,20 @@ class DrawRoundSerializer(serializers.ModelSerializer):
         read_only_fields = ['winning_numbers', 'status']
 
 class DrawEntrySerializer(serializers.ModelSerializer):
+    draw_date = serializers.DateTimeField(source='draw.draw_date', read_only=True)
+    status = serializers.SerializerMethodField()
+
     class Meta:
         model = DrawEntry
-        fields = ['id', 'draw', 'user', 'numbers', 'matches', 'tier_won', 'prize_amount']
-        read_only_fields = ['user', 'matches', 'tier_won', 'prize_amount', 'draw']
+        fields = ['id', 'draw', 'draw_date', 'user', 'numbers', 'matches', 'tier_won', 'prize_amount', 'status']
+        read_only_fields = ['user', 'matches', 'tier_won', 'prize_amount', 'draw', 'draw_date', 'status']
+
+    def get_status(self, obj):
+        if not obj.tier_won:
+            return None
+        from .models import DrawWinner
+        winner = DrawWinner.objects.filter(draw=obj.draw, user=obj.user).first()
+        return winner.status if winner else 'pending_proof'
 
     def validate_numbers(self, value):
         if not isinstance(value, list):
@@ -35,8 +45,9 @@ class DrawEntrySerializer(serializers.ModelSerializer):
 
 class DrawWinnerSerializer(serializers.ModelSerializer):
     user_email = serializers.EmailField(source='user.email', read_only=True)
+    draw_date = serializers.DateTimeField(source='draw.draw_date', read_only=True)
 
     class Meta:
         model = DrawWinner
-        fields = ['id', 'draw', 'user_email', 'tier', 'prize_amount', 'status', 'proof_screenshot_url', 'proof_submitted_at', 'admin_approved_at', 'admin_notes']
-        read_only_fields = ['user_email', 'tier', 'prize_amount']
+        fields = ['id', 'draw', 'draw_date', 'user_email', 'tier', 'prize_amount', 'status', 'proof_screenshot_url', 'proof_submitted_at', 'admin_approved_at', 'admin_notes']
+        read_only_fields = ['user_email', 'draw_date', 'tier', 'prize_amount']

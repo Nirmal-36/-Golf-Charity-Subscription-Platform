@@ -1,25 +1,34 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, ChevronRight } from 'lucide-react';
 import { resolveImageUrl } from '../utils/image';
 import { getCategoryIcon } from '../utils/icons';
+import { Link } from 'react-router-dom';
 
 const CharityCard = ({ charity, onSelect, isSelected }) => {
-  return (
+  const isSelectionMode = !!onSelect;
+
+  const CardWrapper = ({ children }) => (
     <motion.div 
       whileHover={{ scale: 1.02 }}
-      className={`relative bg-white rounded-xl shadow overflow-hidden cursor-pointer border-2 transition-colors ${
+      className={`relative bg-white rounded-xl shadow overflow-hidden transition-all border-2 flex flex-col h-full ${
         isSelected ? 'border-brand-green' : 'border-transparent hover:border-gray-200'
-      }`}
-      onClick={() => onSelect(charity.id)}
+      } ${isSelectionMode ? 'cursor-pointer' : ''}`}
+      onClick={() => isSelectionMode && onSelect(charity.id)}
     >
+      {children}
+    </motion.div>
+  );
+
+  return (
+    <CardWrapper>
       {isSelected && (
-        <div className="absolute top-2 right-2 text-brand-green">
+        <div className="absolute top-2 right-2 text-brand-green z-10">
           <CheckCircle2 size={24} className="fill-white" />
         </div>
       )}
       
-      <div className="h-32 bg-gray-100 flex items-center justify-center p-4">
+      <div className="h-32 bg-gray-50 flex items-center justify-center p-4">
         {charity.logo_image || charity.logo_url ? (
           <img 
             src={resolveImageUrl(charity.logo_image || charity.logo_url)} 
@@ -38,23 +47,34 @@ const CharityCard = ({ charity, onSelect, isSelected }) => {
         )}
       </div>
       
-      <div className="p-4">
-        <div className="text-xs font-semibold text-brand-gold uppercase tracking-wider mb-1">
+      <div className="p-4 flex flex-col flex-1">
+        <div className="text-[10px] font-black text-brand-gold uppercase tracking-widest mb-1">
           {charity.category}
         </div>
         <h3 className="font-bold text-brand-dark mb-2 line-clamp-1" title={charity.name}>
           {charity.name}
         </h3>
-        <p className="text-sm text-gray-600 line-clamp-3 mb-4">
+        <p className="text-sm text-gray-500 line-clamp-3 mb-6 flex-1">
           {charity.description}
         </p>
         
-        <div className="mt-auto pt-3 border-t border-gray-100 flex justify-between items-center text-sm">
-          <span className="text-gray-500">Total Donated</span>
-          <span className="font-semibold text-brand-green">${charity.total_received}</span>
+        <div className="pt-4 border-t border-gray-100 mt-auto space-y-4">
+          <Link 
+            to={`/charity/${charity.slug}`}
+            className="w-full py-3 bg-brand-light text-brand-green rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-brand-green hover:text-white transition group"
+          >
+            View Profile <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
+          
+          {isSelectionMode && (
+              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-tighter text-gray-400 px-2">
+                <span>Direct Impact</span>
+                <span className="text-brand-green">${charity.total_received}</span>
+              </div>
+          )}
         </div>
       </div>
-    </motion.div>
+    </CardWrapper>
   );
 };
 

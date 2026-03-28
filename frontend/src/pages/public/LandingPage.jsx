@@ -256,33 +256,34 @@ const LandingPage = () => {
               {loadingCharities ? (
                 <div className="text-gray-500 animate-pulse">Loading partner impact...</div>
               ) : charities.map((charity, i) => (
-                <motion.div 
-                  key={i}
-                  whileHover={{ x: 10 }}
-                  className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm flex gap-6 items-center"
-                >
-                  <div className="w-16 h-16 bg-white/10 rounded-2xl flex-shrink-0 flex items-center justify-center overflow-hidden">
-                    {charity.logo_image || charity.logo_url ? (
-                      <img 
-                        src={resolveImageUrl(charity.logo_image || charity.logo_url)} 
-                        alt={charity.name} 
-                        className="max-h-12 object-contain filter invert opacity-80" 
-                      />
-                    ) : (
-                      (() => {
-                        const Icon = getCategoryIcon(charity.category);
-                        return <Icon size={32} className="text-brand-gold opacity-80" strokeWidth={1.5} />;
-                      })()
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-brand-green">{charity.category}</span>
-                      <span className="text-brand-gold font-black text-sm">${charity.total_received}</span>
+                <Link key={i} to={`/charity/${charity.slug}`}>
+                  <motion.div 
+                    whileHover={{ x: 10 }}
+                    className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm flex gap-6 items-center hover:bg-white/10 transition-all group"
+                  >
+                    <div className="w-16 h-16 bg-white/10 rounded-2xl flex-shrink-0 flex items-center justify-center overflow-hidden group-hover:bg-brand-green/20 transition-all">
+                      {charity.logo_image || charity.logo_url ? (
+                        <img 
+                          src={resolveImageUrl(charity.logo_image || charity.logo_url)} 
+                          alt={charity.name} 
+                          className="max-h-12 object-contain filter invert opacity-80" 
+                        />
+                      ) : (
+                        (() => {
+                          const Icon = getCategoryIcon(charity.category);
+                          return <Icon size={32} className="text-brand-gold opacity-80" strokeWidth={1.5} />;
+                        })()
+                      )}
                     </div>
-                    <h4 className="text-xl font-bold">{charity.name}</h4>
-                  </div>
-                </motion.div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-brand-green">{charity.category}</span>
+                        <span className="text-brand-gold font-black text-sm">${charity.total_received}</span>
+                      </div>
+                      <h4 className="text-xl font-bold">{charity.name}</h4>
+                    </div>
+                  </motion.div>
+                </Link>
               ))}
             </div>
           </div>

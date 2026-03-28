@@ -43,3 +43,35 @@ def create_checkout_session(user, success_url, cancel_url, plan_type='monthly'):
         }
     )
     return session
+
+def create_one_time_donation_session(charity, amount, success_url, cancel_url, customer_email=None):
+    """
+    Creates a Stripe Checkout Session for a one-time donation to a specific charity.
+    """
+    # Amount is in dollars, convert to cents
+    unit_amount = int(float(amount) * 100)
+
+    session = stripe.checkout.Session.create(
+        payment_method_types=['card'],
+        customer_email=customer_email,
+        line_items=[{
+            'price_data': {
+                'currency': 'usd',
+                'product_data': {
+                    'name': f'One-time Donation to {charity.name}',
+                    'description': 'Thank you for your independent support toward this cause.',
+                },
+                'unit_amount': unit_amount,
+            },
+            'quantity': 1,
+        }],
+        mode='payment',
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            'type': 'one_time_donation',
+            'charity_id': charity.id,
+            'amount': str(amount)
+        }
+    )
+    return session

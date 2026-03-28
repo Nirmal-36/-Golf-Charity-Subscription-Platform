@@ -127,3 +127,33 @@ class CharityDonationsView(generics.ListAPIView):
     def get_queryset(self):
         charity = get_object_or_404(Charity, managed_by=self.request.user)
         return Donation.objects.filter(charity=charity).order_by('-timestamp')
+
+class OneTimeDonationView(APIView):
+    """
+    Public endpoint to initiate a one-time donation to a specific charity.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, slug):
+        charity = get_object_or_404(Charity, slug=slug, is_active=True)
+        amount = request.data.get('amount')
+        success_url = request.data.get('success_url', 'http://localhost:5173/donation/success')
+        cancel_url = request.data.get('cancel_url', f'http://localhost:5173/charity/{slug}')
+        
+        if not amount or float(amount) <= 0:
+            return Response({'error': 'Invalid donation amount.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            from apps.subscriptions.services import create_one_time_donation_session
+            customer_email = request.user.email if request.user.is_authenticated else request.data.get('email')
+            
+            session = create_one_time_donation_session(
+                charity=charity,
+                amount=amount,
+                success_url=success_url,
+                cancel_url=cancel_url,
+                customer_email=customer_email
+            )
+            return Response({'checkout_url': session.url})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

@@ -37,26 +37,33 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
+    selected_charity_id = serializers.IntegerField(required=True, write_only=True)
     
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'password', 'first_name', 'last_name', 'user_role')
+        fields = ('id', 'email', 'username', 'password', 'first_name', 'last_name', 'user_role', 'selected_charity_id')
 
     def create(self, validated_data):
+        selected_charity_id = validated_data.pop('selected_charity_id')
+        charity = Charity.objects.get(id=selected_charity_id)
+        
         user = User.objects.create_user(
             email=validated_data['email'],
             username=validated_data['username'],
             password=validated_data['password'],
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
-            user_role=validated_data.get('user_role', 'member')
+            user_role=validated_data.get('user_role', 'member'),
+            selected_charity=charity
         )
         return user
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        # Pre-check for deactivated accounts to provide a better error message
+        # Pre-check for deactivated accounts or non-existent accounts to provide better error messages
         username = attrs.get(self.username_field)
+        password = attrs.get('password')
+        
         try:
             user = User.objects.get(**{self.username_field: username})
             if not user.is_active:
@@ -64,9 +71,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                     "detail": "Your account has been deactivated by an administrator. Please contact support."
                 })
         except User.DoesNotExist:
-            pass # Standard TokenObtainPairSerializer will handle non-existent users
+            raise serializers.ValidationError({
+                "detail": "No account found with this email address. Please check your spelling or register."
+            })
 
-        data = super().validate(attrs)
+        # Standard JWT validation (handles password check)
+        try:
+            data = super().validate(attrs)
+        except Exception:
+            raise serializers.ValidationError({
+                "detail": "Incorrect password. Please try again or reset your password."
+            })
+
         # Add extra user info to the payload
         data['user'] = UserSerializer(self.user).data
         return data

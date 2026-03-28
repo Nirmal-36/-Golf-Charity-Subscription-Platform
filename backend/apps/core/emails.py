@@ -166,3 +166,33 @@ def send_charity_approval_email(user_email, org_name):
         return f"Charity approval email sent to {user_email}"
     except Exception as e:
         return f"Error sending charity approval email: {str(e)}"
+@shared_task
+def send_otp_email(user_email, otp_code, purpose="password reset"):
+    """
+    Sends a 6-digit OTP code for verification.
+    """
+    message = Mail(
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to_emails=user_email,
+        subject=f'Your Verification Code: {otp_code} ⛳️',
+        html_content=f'''
+            <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
+                <h1 style="color: #059669;">Verification Code</h1>
+                <p>Hello,</p>
+                <p>You requested a code for <strong>{purpose}</strong>. Please use the 6-digit code below to continue:</p>
+                <div style="background-color: #f0fdf4; padding: 30px; border-radius: 20px; text-align: center; margin: 30px 0;">
+                    <span style="font-size: 48px; font-weight: 900; letter-spacing: 12px; color: #166534;">{otp_code}</span>
+                </div>
+                <p style="color: #666; font-size: 14px;">This code will expire in 15 minutes. If you did not request this, please ignore this email.</p>
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                    <p style="color: #999; font-size: 12px;">The Golf Charity Team</p>
+                </div>
+            </div>
+        '''
+    )
+    try:
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        sg.send(message)
+        return f"OTP sent to {user_email}"
+    except Exception as e:
+        return f"Error sending OTP: {str(e)}"

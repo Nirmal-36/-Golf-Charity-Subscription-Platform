@@ -41,6 +41,7 @@ const Navbar = () => {
         : [
             { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
             { name: 'Prize Draw', href: '/draw', icon: Trophy },
+            { name: 'My Wins', href: '/my-wins', icon: Trophy },
             { name: 'Charities', href: '/charities', icon: Compass },
           ])
     : [

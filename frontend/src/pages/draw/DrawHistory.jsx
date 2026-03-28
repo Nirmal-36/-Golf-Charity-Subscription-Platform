@@ -51,12 +51,27 @@ const DrawHistory = () => {
                         <Trophy size={18} /> Tier {entry.tier_won} Winner!
                         <div className="text-2xl ml-2">${parseFloat(entry.prize_amount).toLocaleString()}</div>
                       </div>
-                      <Link 
-                        to="/my-wins" 
-                        className="text-xs bg-brand-gold text-brand-dark px-4 py-1.5 rounded-xl font-black hover:scale-105 transition shadow-sm"
-                      >
-                        Verify & Claim Prize
-                      </Link>
+                      
+                      {entry.status === 'paid' ? (
+                        <div className="flex items-center gap-1.5 px-3 py-1 bg-green-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
+                           <CheckCircle2 size={12} /> Prize Paid
+                        </div>
+                      ) : entry.status === 'approved' ? (
+                        <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 border border-green-100 rounded-full text-[10px] font-black uppercase tracking-widest">
+                           <CheckCircle2 size={12} /> Approved
+                        </div>
+                      ) : entry.status === 'proof_submitted' ? (
+                        <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-full text-[10px] font-black uppercase tracking-widest">
+                           <Clock size={12} /> Reviewing Proof
+                        </div>
+                      ) : (
+                        <Link 
+                          to="/my-wins" 
+                          className="text-xs bg-brand-gold text-brand-dark px-4 py-1.5 rounded-xl font-black hover:scale-105 transition shadow-sm"
+                        >
+                          Verify & Claim Prize
+                        </Link>
+                      )}
                     </div>
                   ) : (
                     <div className="text-gray-400 flex items-center gap-1 justify-end">

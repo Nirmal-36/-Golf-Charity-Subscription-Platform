@@ -1,4 +1,5 @@
 from django.db import models
+from django.dispatch import receiver
 
 class Charity(models.Model):
     name = models.CharField(max_length=200)
@@ -34,8 +35,39 @@ class Charity(models.Model):
                     
         super().save(*args, **kwargs)
 
+class CharityImage(models.Model):
+    charity = models.ForeignKey(Charity, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='charities/gallery/')
+    caption = models.CharField(max_length=200, blank=True)
+    is_banner = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
-        return self.name
+        return f"Image for {self.charity.name}"
+
+class CharityEvent(models.Model):
+    charity = models.ForeignKey(Charity, on_delete=models.CASCADE, related_name='events')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    event_date = models.DateTimeField()
+    location = models.CharField(max_length=255, blank=True)
+    image = models.ImageField(upload_to='charities/events/', blank=True, null=True)
+    link_url = models.URLField(blank=True, help_text="Link to external event page or registration")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.charity.name}"
 
     class Meta:
-        verbose_name_plural = "Charities"
+        ordering = ['event_date']
+@receiver(models.signals.post_delete, sender=Charity)
+def delete_associated_organization_user(sender, instance, **kwargs):
+    """
+    If a Charity is deleted, ensure the associated organization user is also deleted.
+    """
+    if instance.managed_by:
+        try:
+            instance.managed_by.delete()
+        except Exception as e:
+            print(f"Error deleting associated user for charity {instance.name}: {e}")

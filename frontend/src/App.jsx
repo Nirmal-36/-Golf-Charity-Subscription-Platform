@@ -9,7 +9,10 @@ import ExploreCharities from './pages/charity/ExploreCharities';
 import Membership from './pages/public/Membership';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import CharityDetail from './pages/charity/CharityDetail';
 import OrganizationRegister from './pages/auth/OrganizationRegister';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import StaticPage from './pages/public/StaticPage';
 
 // Subscriber Pages
@@ -18,6 +21,7 @@ import ScoreSubmit from './pages/dashboard/ScoreSubmit';
 import CharityBrowse from './pages/charity/CharityBrowse';
 import Subscription from './pages/dashboard/Subscription';
 import Success from './pages/public/Success';
+import DonationSuccess from './pages/public/DonationSuccess';
 import Cancel from './pages/public/Cancel';
 import Draw from './pages/draw/Draw';
 import DrawHistory from './pages/draw/DrawHistory';
@@ -104,10 +108,13 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/explore" element={<ExploreCharities />} />
+          <Route path="/charity/:slug" element={<CharityDetail />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/register/organization" element={<OrganizationRegister />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           
           {/* Static Content Routes */}
           <Route path="/about" element={<StaticPage title="Our Mission" description="Driving change through every swing." />} />
@@ -128,6 +135,7 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/success" element={<Success />} />
+          <Route path="/donation/success" element={<DonationSuccess />} />
           <Route path="/cancel" element={<Cancel />} />
 
           {/* Protected Subscriber Routes */}
