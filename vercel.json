@@ -36,7 +36,7 @@
     },
     {
       "source": "/((?!api|admin|static/admin|media|assets|favicon.svg|logo.*|.*\\.js|.*\\.css|.*\\.png|.*\\.jpg).*)",
-      "destination": "/frontend/index.html"
+      "destination": "/index.html"
     }
   ],
   "crons": [
