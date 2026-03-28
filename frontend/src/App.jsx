@@ -1,38 +1,49 @@
+/**
+ * Application Core Architecture: Routing & Access Control
+ * Defines the comprehensive navigation tree, secure route guards, 
+ * and role-based redirection logic for the entire platform.
+ */
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import MainLayout from './components/MainLayout';
 import ScrollToTop from './components/ScrollToTop';
 
-// Core Pages
+// Public Facing Assets & Information
 import LandingPage from './pages/public/LandingPage';
 import ExploreCharities from './pages/charity/ExploreCharities';
 import Membership from './pages/public/Membership';
+import StaticPage from './pages/public/StaticPage';
+
+// Authentication & Identity Management
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
-import CharityDetail from './pages/charity/CharityDetail';
 import OrganizationRegister from './pages/auth/OrganizationRegister';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
-import StaticPage from './pages/public/StaticPage';
 
-// Subscriber Pages
+// Member & Gameplay Experience
 import Dashboard from './pages/dashboard/Dashboard';
 import ScoreSubmit from './pages/dashboard/ScoreSubmit';
+import Profile from './pages/dashboard/Profile';
 import CharityBrowse from './pages/charity/CharityBrowse';
-import Subscription from './pages/dashboard/Subscription';
-import Success from './pages/public/Success';
-import DonationSuccess from './pages/public/DonationSuccess';
-import Cancel from './pages/public/Cancel';
+import CharityDetail from './pages/charity/CharityDetail';
 import Draw from './pages/draw/Draw';
 import DrawHistory from './pages/draw/DrawHistory';
 import MyWins from './pages/draw/MyWins';
+
+// Subscription & Checkout Lifecycle
+import Subscription from './pages/dashboard/Subscription';
 import SubscriptionDetails from './pages/dashboard/SubscriptionDetails';
-import Profile from './pages/dashboard/Profile';
+import Success from './pages/public/Success';
+import DonationSuccess from './pages/public/DonationSuccess';
+import Cancel from './pages/public/Cancel';
+
+// Partner Hub: Charity Impact Tracking
 import OrganizationDashboard from './pages/organization/OrganizationDashboard';
 import OrganizationProfile from './pages/organization/OrganizationProfile';
 import OrganizationDonations from './pages/organization/OrganizationDonations';
 
-// Admin Pages
+// Administrative Command Center
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminPayouts from './pages/admin/AdminPayouts';
@@ -41,7 +52,8 @@ import AdminCharities from './pages/admin/AdminCharities';
 import AdminDraws from './pages/admin/AdminDraws';
 
 /**
- * Protected Route for Admin only
+ * Access Control: Administrative Guard
+ * Restricts view access to authenticated users with 'admin' designation.
  */
 const AdminRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -51,7 +63,8 @@ const AdminRoute = ({ children }) => {
 };
 
 /**
- * Protected Route for Organization Partners only
+ * Access Control: Partner Guard
+ * Restricts view access to verified Charity Organizations.
  */
 const PartnerRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -60,36 +73,46 @@ const PartnerRoute = ({ children }) => {
   return children;
 };
 
-// Protected Route Wrapper enforces Authentication AND Active Subscription
+/**
+ * Access Control: Comprehensive Protected Guard
+ * Orchestrates dual-layer security for Member-specific features:
+ * 1. Authentication Check: Verifies active session.
+ * 2. Subscription Check: Verifies active monthly/yearly membership.
+ * Includes automated redirection for Admins/Orgs to prevent UX friction.
+ */
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
   
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-brand-light"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-green"></div></div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-brand-light">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-green"></div>
+    </div>
+  );
+
+  // Security Redirect: Unauthenticated access forbidden
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   
+  // Infrastructure Logic: Identify player-specific functionality
   const playerOnlyPaths = ['/dashboard', '/scores/submit', '/scores/edit', '/subscribe', '/draw', '/draw/history', '/my-wins'];
-  const isPlayerOnly = playerOnlyPaths.some(path => location.pathname.startsWith(path));
+  const isPlayerOnlyPath = playerOnlyPaths.some(path => location.pathname.startsWith(path));
 
-  // Organizations and Admins bypass the subscription check but are redirected from player-only routes
+  // Role Reconciliation: Direct organizations to their specific hub
   if (user.user_role === 'organization') {
-    if (isPlayerOnly) {
-      return <Navigate to="/org/dashboard" replace />;
-    }
+    if (isPlayerOnlyPath) return <Navigate to="/org/dashboard" replace />;
     return children;
   }
   
+  // Role Reconciliation: Direct administrators to the command center
   if (user.user_role === 'admin' || user.is_staff) {
-    if (isPlayerOnly) {
-       return <Navigate to="/admin/dashboard" replace />;
-    }
+    if (isPlayerOnlyPath) return <Navigate to="/admin/dashboard" replace />;
     return children;
   }
   
-  // If user is authenticated but not active, redirect to subscription page
+  // Philanthropic Guard: Membership must be active to enter draws or track scores
   if (user.subscription_status !== 'active') {
-    const allowedPaths = ['/subscribe', '/subscription/details', '/charities'];
-    if (!allowedPaths.includes(location.pathname)) {
+    const bypassingPaths = ['/subscribe', '/subscription/details', '/charities'];
+    if (!bypassingPaths.includes(location.pathname)) {
       return <Navigate to="/subscribe" />;
     }
   }
@@ -97,6 +120,10 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+/**
+ * Main Application Runtime
+ * Root component managing global layout, scroll behavior, and the routing nexus.
+ */
 function App() {
   const { user } = useAuth();
 
@@ -105,7 +132,7 @@ function App() {
       <ScrollToTop />
       <MainLayout>
         <Routes>
-          {/* Public Routes */}
+          {/* Section: Public Utility & Marketing */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/explore" element={<ExploreCharities />} />
           <Route path="/charity/:slug" element={<CharityDetail />} />
@@ -116,7 +143,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           
-          {/* Static Content Routes */}
+          {/* Section: Corporate & Information Infrastructure */}
           <Route path="/about" element={<StaticPage title="Our Mission" description="Driving change through every swing." />} />
           <Route path="/faq" element={<StaticPage title="Frequently Asked Questions" description="Everything you need to know about the platform." />} />
           <Route path="/transparency" element={<StaticPage title="Transparency Report" description="Our commitment to accountable giving." />} />
@@ -126,9 +153,8 @@ function App() {
           <Route path="/privacy" element={<StaticPage title="Privacy Policy" description="How we protect your data." />} />
           <Route path="/cookies" element={<StaticPage title="Cookie Settings" description="Managing your preferences." />} />
           
-          <Route path="/subscribe" element={
-            user ? <Subscription /> : <Navigate to="/login" />
-          } />
+          {/* Section: Philanthropic Onboarding */}
+          <Route path="/subscribe" element={user ? <Subscription /> : <Navigate to="/login" />} />
           <Route path="/subscription/details" element={
             <ProtectedRoute>
               <SubscriptionDetails />
@@ -138,7 +164,7 @@ function App() {
           <Route path="/donation/success" element={<DonationSuccess />} />
           <Route path="/cancel" element={<Cancel />} />
 
-          {/* Protected Subscriber Routes */}
+          {/* Section: Professional Member Hub */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/scores/submit" element={<ProtectedRoute><ScoreSubmit /></ProtectedRoute>} />
           <Route path="/scores/edit/:id" element={<ProtectedRoute><ScoreSubmit /></ProtectedRoute>} />
@@ -148,12 +174,12 @@ function App() {
           <Route path="/draw/history" element={<ProtectedRoute><DrawHistory /></ProtectedRoute>} />
           <Route path="/my-wins" element={<ProtectedRoute><MyWins /></ProtectedRoute>} />
           
-          {/* Partner Routes */}
+          {/* Section: Partner Experience (Charities) */}
           <Route path="/org/dashboard" element={<PartnerRoute><OrganizationDashboard /></PartnerRoute>} />
           <Route path="/org/profile" element={<PartnerRoute><OrganizationProfile /></PartnerRoute>} />
           <Route path="/org/donations" element={<PartnerRoute><OrganizationDonations /></PartnerRoute>} />
 
-          {/* Admin Routes */}
+          {/* Section: Administrative Control Center */}
           <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
           <Route path="/admin/payouts" element={<AdminRoute><AdminPayouts /></AdminRoute>} />
@@ -161,7 +187,7 @@ function App() {
           <Route path="/admin/charities" element={<AdminRoute><AdminCharities /></AdminRoute>} />
           <Route path="/admin/draws" element={<AdminRoute><AdminDraws /></AdminRoute>} />
 
-          {/* Redirect old root to dashboard if logged in */}
+          {/* Runtime Fallback */}
           <Route path="/home" element={<Navigate to="/" replace />} />
         </Routes>
       </MainLayout>

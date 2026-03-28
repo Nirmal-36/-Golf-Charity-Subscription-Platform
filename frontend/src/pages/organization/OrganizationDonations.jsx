@@ -1,32 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+// import { motion } from 'framer-motion';
+import { DollarSign, Calendar, Search, ArrowDownCircle, Loader2 } from 'lucide-react';
 import api from '../../api/axios';
-import { DollarSign, Search, Calendar, User, ArrowLeft, Download, Filter, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import CustomSelect from '../../components/ui/CustomSelect';
 
+/**
+ * Philanthropic Ledger: OrganizationDonations
+ * Provides a granular audit trail of all charitable contributions.
+ * Facilitates fiscal transparency through filtered views, 
+ * impact aggregation, and exportable CSV reports for reconciliation.
+ */
 const OrganizationDonations = () => {
+  
+  // State: Disbursement registry & UI orchestration
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('all'); // all, monthly, yearly
+  const [filter, setFilter] = useState('all'); // Schema: all, monthly, yearly
 
+  // Lifecycle: Synchronize disbursement chronicle on mount
   useEffect(() => {
     fetchDonations();
   }, []);
 
+  /**
+   * Infrastructure Sync: fetchDonations
+   * Retrieves the comprehensive donation log from the persistence layer.
+   */
   const fetchDonations = async () => {
     try {
       const { data } = await api.get('/api/charities/donations/');
       setDonations(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Failed to fetch donations');
+    } catch {
+      console.error('Infrastructure Alert: Donation ledger inaccessible.');
       setDonations([]);
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Utility: handleExport
+   * Formats current view into a standard CSV for organizational reporting.
+   */
   const handleExport = () => {
     const headers = ['Supporter', 'Plan Type', 'Date', 'Amount', 'Invoice ID'];
     const rows = filteredDonations.map(d => [

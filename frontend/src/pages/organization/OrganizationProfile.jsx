@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Heart, Camera, CheckCircle2, Globe, Save, Loader2, ArrowLeft, Trash2 } from 'lucide-react';
-import api from '../../api/axios';
+import { 
+  Building2, Mail, Globe, MapPin, 
+  Camera, Save, CheckCircle2, Loader2, Trash2 
+} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { Link } from 'react-router-dom';
+import api from '../../api/axios';
 import { resolveImageUrl } from '../../utils/image';
 import { getCategoryIcon } from '../../utils/icons';
 import { CHARITY_CATEGORIES } from '../../utils/constants';
-import { ChevronDown } from 'lucide-react';
-import CustomSelect from '../../components/ui/CustomSelect';
 
+/**
+ * Branding Terminal: OrganizationProfile
+ * Manages the public-facing identity of the charitable partner.
+ * Orchestrates mission statement persistence, category classification, 
+ * and visual asset management (logo upload/removal).
+ */
 const OrganizationProfile = () => {
   const { user } = useAuth();
+  
+  // State: Organizational metadata & visual asset lifecycle
   const [charity, setCharity] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
@@ -27,10 +34,16 @@ const OrganizationProfile = () => {
 
   const fileInputRef = React.useRef(null);
 
+  // Lifecycle: Hydrate organizational profile from persistence layer
   useEffect(() => {
     fetchCharityData();
   }, []);
 
+  /**
+   * Infrastructure Sync: fetchCharityData
+   * Retrieves the comprehensive partner profile including 
+   * existing branding assets and classification.
+   */
   const fetchCharityData = async () => {
     try {
       const { data } = await api.get('/api/charities/my-profile/');
@@ -41,36 +54,41 @@ const OrganizationProfile = () => {
         category: data.category,
         logo_url: data.logo_url
       });
+      // Visual Sync: Resolve branding preview
       if (data.logo_image) {
         setPreviewUrl(resolveImageUrl(data.logo_image));
       } else if (data.logo_url) {
         setPreviewUrl(resolveImageUrl(data.logo_url));
       }
-    } catch (err) {
-      console.error('Failed to fetch charity profile');
+    } catch {
+      console.error('Infrastructure Alert: Organizational data inaccessible.');
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * UI Interaction: handleFileSelect
+   * Generates a local preview of the proposed branding asset 
+   * for organizational review.
+   */
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
       setLogoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewUrl(reader.result); // Base64 for instant preview
+        setPreviewUrl(reader.result); // UX Alert: Base64 for zero-latency preview
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleRemoveLogo = () => {
-    setLogoFile(null);
-    setPreviewUrl(null);
-    setFormData(prev => ({ ...prev, logo_url: '' }));
-  };
-
+  /**
+   * Transaction Handler: handleUpdate
+   * Synchronizes the organizational identity with the backend.
+   * Utilizes multipart/form-data for concurrent text and binary transmission.
+   */
   const handleUpdate = async (e) => {
     e.preventDefault();
     setSaveLoading(true);
@@ -83,11 +101,11 @@ const OrganizationProfile = () => {
       dataToSend.append('category', formData.category);
       dataToSend.append('logo_url', formData.logo_url);
       
+      // Branding Sync: Handle logo binary or removal signal
       if (logoFile) {
         dataToSend.append('logo_image', logoFile);
       } else if (!previewUrl) {
-        // If previewUrl is null, it means user removed the logo
-        dataToSend.append('logo_image', ''); // DRF handles this as clearing the field
+        dataToSend.append('logo_image', ''); 
       }
 
       const { data } = await api.patch(`/api/charities/my-profile/`, dataToSend, {
@@ -96,6 +114,7 @@ const OrganizationProfile = () => {
         },
       });
       
+      // UI Sync: Refresh local state and signal success
       setCharity(data);
       if (data.logo_image) {
         setPreviewUrl(resolveImageUrl(data.logo_image));
@@ -107,8 +126,28 @@ const OrganizationProfile = () => {
       setSaved(true);
       setLogoFile(null);
       setTimeout(() => setSaved(false), 3000);
-    } catch (err) {
-      console.error('Failed to update profile');
+    } catch {
+      console.error('Transaction Alert: Protocol rejection during profile update.');
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  /**
+   * Infrastructure Sync: handleRemoveLogo
+   * Signal the orchestrator to purge the organizational visual identity.
+   */
+  const handleRemoveLogo = async () => {
+    try {
+      setSaveLoading(true);
+      await api.delete('/api/charities/my-profile/remove-logo/');
+      setCharity(prev => ({ ...prev, logo_image: null, logo_url: null }));
+      setPreviewUrl(null);
+      setLogoFile(null);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch {
+      console.error('Infrastructure Alert: Logo removal rejected.');
     } finally {
       setSaveLoading(false);
     }

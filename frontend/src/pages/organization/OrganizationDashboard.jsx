@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Heart, Users, TrendingUp, DollarSign, Edit3, Camera, CheckCircle2, Globe, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../api/axios';
-import { useAuth } from '../../hooks/useAuth';
+// import { useAuth } from '../../hooks/useAuth';
 import { resolveImageUrl } from '../../utils/image';
 import { getCategoryIcon } from '../../utils/icons';
 
 const OrganizationDashboard = () => {
-  const { user } = useAuth();
   const [charity, setCharity] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +18,7 @@ const OrganizationDashboard = () => {
     try {
       const { data } = await api.get('/api/charities/my-profile/');
       setCharity(data);
-    } catch (err) {
+    } catch {
       console.error('Failed to fetch charity profile');
     } finally {
       setLoading(false);
@@ -165,15 +163,18 @@ const OrganizationDashboard = () => {
   );
 };
 
-const StatCard = ({ label, value, icon: Icon, color }) => (
-  <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-lg shadow-gray-200/50">
-    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 bg-gray-50 text-${color}`}>
-      <Icon size={24} />
+const StatCard = ({ label, value, icon, color }) => {
+  const Icon = icon;
+  return (
+    <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-lg shadow-gray-200/50">
+      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 bg-gray-50 text-${color}`}>
+        <Icon size={24} />
+      </div>
+      <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{label}</p>
+      <p className="text-3xl font-black text-brand-dark">{value}</p>
     </div>
-    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{label}</p>
-    <p className="text-3xl font-black text-brand-dark">{value}</p>
-  </div>
-);
+  );
+};
 
 const QuickLink = ({ label, href }) => (
   <a href={href} className="flex items-center justify-between p-4 bg-gray-50 hover:bg-brand-green/5 hover:text-brand-green rounded-2xl font-bold transition-all text-gray-500 group">

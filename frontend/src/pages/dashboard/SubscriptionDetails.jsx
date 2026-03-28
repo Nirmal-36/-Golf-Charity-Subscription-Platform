@@ -1,62 +1,87 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { 
+  CreditCard, Calendar, Heart, Shield, 
+  ExternalLink, AlertTriangle, CheckCircle, Loader2 
+} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CreditCard, Heart, Calendar, ArrowRight, ShieldCheck, Award, Loader2 } from 'lucide-react';
-import { Link, Navigate } from 'react-router-dom';
-import SubscriptionBadge from '../../components/SubscriptionBadge';
 import api from '../../api/axios';
+import { Navigate } from 'react-router-dom';
 
+/**
+ * Management Terminal: SubscriptionDetails
+ * Facilitates comprehensive subscription lifecycle management.
+ * Orchestrates billing portal access, historical invoice retrieval, 
+ * and real-time adjustment of philanthropic commitment levels.
+ */
 const SubscriptionDetails = () => {
   const { user, setUser } = useAuth();
+  // const navigate = useNavigate();
   
-  if (user?.is_staff) {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
+  // State: Transactional metadata & billing intelligence
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState(null);
   const [invoices, setInvoices] = useState([]);
   
-  // New States for Donation Slider
+  // Optimization: Zero-latency slider state
   const [tempPercentage, setTempPercentage] = useState(user?.donation_percentage || 10);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  React.useEffect(() => {
+  // Lifecycle: Synchronize billing history and local slider state
+  useEffect(() => {
     fetchHistory();
     if (user?.donation_percentage) {
       setTempPercentage(user.donation_percentage);
     }
   }, [user?.donation_percentage]);
 
+  // Security: Redirection for administrative identities (Moved after all hooks)
+  if (user?.is_staff) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  /**
+   * Infrastructure Sync: fetchHistory
+   * Retrieves historical transaction data from the billing orchestrator.
+   */
   const fetchHistory = async () => {
     setHistoryLoading(true);
     try {
       const { data } = await api.get('/api/subscriptions/history/');
       setInvoices(data.invoices || []);
-    } catch (err) {
-      console.error('Failed to fetch billing history');
+    } catch {
+      console.error('Infrastructure Alert: Billing history inaccessible.');
     } finally {
       setHistoryLoading(false);
     }
   };
 
+  /**
+   * UI Interaction: handlePercentageUpdate
+   * Synchronizes the user's philanthropic commitment level with the 
+   * persistence layer. Implemented with optimistic UI updates.
+   */
   const handlePercentageUpdate = async (val) => {
     setIsSaving(true);
     setSaved(false);
     try {
-      const { data } = await api.patch('/api/auth/me/', { donation_percentage: val });
-      // Update local context immediately for zero-latency feel
+      await api.patch('/api/auth/me/', { donation_percentage: val });
+      // UI Sync: Update local context for immediate feedback
       setUser({ ...user, donation_percentage: val });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch (err) {
-      console.error('Failed to update donation percentage');
+    } catch {
+      console.error('Transaction Alert: Commitment synchronization failed.');
     } finally {
       setIsSaving(false);
     }
   };
 
+  /**
+   * Gateway Integration: handleManageBilling
+   * Initiates a secure session with the Stripe Student Customer Portal.
+   */
   const handleManageBilling = async () => {
     setLoading(true);
     setError(null);
@@ -64,9 +89,10 @@ const SubscriptionDetails = () => {
       const { data } = await api.post('/api/subscriptions/create-portal-session/', {
         return_url: window.location.href
       });
+      // Security: Hand-off to the encrypted Stripe portal
       window.location.href = data.portal_url;
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to open billing portal.');
+    } catch {
+      setError('Transaction Alert: Secure billing portal initialization failed.');
       setLoading(false);
     }
   };

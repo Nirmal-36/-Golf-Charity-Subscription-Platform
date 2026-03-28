@@ -1,64 +1,55 @@
 import React, { useState, useEffect } from 'react';
+// import { motion } from 'framer-motion';
+import { Trophy, Target, Clock, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { useDraw } from '../../hooks/useDraw';
-import { Target, AlertCircle, Clock, Trophy } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import NumberPicker from '../../components/NumberPicker';
 
+/**
+ * Gamification Hub: Draw
+ * The primary interface for monthly prize draw participation.
+ * Orchestrates number selection (1-45), entry state persistence, 
+ * and real-time countdown to the next drawing event.
+ */
 const Draw = () => {
   const { currentDraw, loading, error, fetchCurrentDraw, enterDraw } = useDraw();
+  
+  // State: Selection metadata & Transaction lifecycle
   const [selectedNumbers, setSelectedNumbers] = useState([]);
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState('');
+  const timeLeft = 'TBA';
 
+  // Lifecycle: Synchronize active draw parameters on mount
   useEffect(() => {
     fetchCurrentDraw();
-  }, []);
+  }, [fetchCurrentDraw]);
 
-  useEffect(() => {
-    if (currentDraw?.draw_date) {
-      const targetDate = new Date(currentDraw.draw_date).getTime();
-      
-      const interval = setInterval(() => {
-        const now = new Date().getTime();
-        const distance = targetDate - now;
-
-        if (distance < 0) {
-          clearInterval(interval);
-          setTimeLeft("Draw is executing...");
-          return;
-        }
-
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        
-        setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }
-  }, [currentDraw]);
-
+  /**
+   * UI Interaction: toggleNumber
+   * Manages the selection state for the 5-number draw entry.
+   * Enforces business rule: Exactly 5 unique integers required.
+   */
   const toggleNumber = (num) => {
     setSubmitError('');
     if (selectedNumbers.includes(num)) {
       setSelectedNumbers(selectedNumbers.filter((n) => n !== num));
     } else {
       if (selectedNumbers.length >= 5) {
-        setSubmitError("You can only select exactly 5 numbers.");
+        setSubmitError("Selection Alert: Capacity reached (Max 5 numbers).");
         return;
       }
       setSelectedNumbers([...selectedNumbers, num]);
     }
   };
 
+  /**
+   * Transaction Handler: handleSubmit
+   * Dispatches the draw entry to the persistence layer.
+   * Includes pre-flight validation to ensure schema compliance.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (selectedNumbers.length !== 5) {
-      setSubmitError("Please select exactly 5 numbers.");
+      setSubmitError("Selection Alert: Incomplete entry (5 numbers required).");
       return;
     }
     

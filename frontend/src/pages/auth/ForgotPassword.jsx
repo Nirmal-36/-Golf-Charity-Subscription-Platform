@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { Mail, ArrowLeft, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import api from '../../api/axios';
-import { motion } from 'framer-motion';
-import { Mail, ArrowRight, ArrowLeft, ShieldCheck } from 'lucide-react';
 
+/**
+ * Security: ForgotPassword
+ * Initiates the password recovery protocol by requesting a one-time 
+ * verification code (OTP). Ensures the process is secure and user-friendly.
+ */
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
@@ -11,6 +15,12 @@ const ForgotPassword = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
+    /**
+     * Transaction Handler: handleSubmit
+     * Executes the OTP request and provides immediate feedback on 
+     * the dispatch status. Stores the target email in session storage 
+     * to maintain context for the subsequent reset step.
+     */
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -23,11 +33,12 @@ const ForgotPassword = () => {
                 purpose: 'password reset'
             });
             setMessage('Verification code sent! Checking your inbox...');
-            // Store email for the next step
+            
+            // Context Management: Persist email for the reset workflow
             sessionStorage.setItem('reset_email', email);
             setTimeout(() => navigate('/reset-password'), 2000);
         } catch (err) {
-            setError(err.response?.data?.detail || 'Failed to send verification code. Please try again.');
+            setError(err.response?.data?.detail || 'Recovery Alert: Protocol failed to dispatch verification code.');
         } finally {
             setLoading(false);
         }

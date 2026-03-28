@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import api from '../api/axios';
 
 export const useDraw = () => {
@@ -13,7 +13,7 @@ export const useDraw = () => {
       const { data } = await api.get('/api/draws/current/');
       setCurrentDraw(data);
       setError(null);
-    } catch (err) {
+    } catch {
       setError('Failed to load current draw details.');
     } finally {
       setLoading(false);
@@ -26,7 +26,7 @@ export const useDraw = () => {
       const { data } = await api.get('/api/draws/my-history/');
       setHistory(data);
       setError(null);
-    } catch (err) {
+    } catch {
       setError('Failed to load draw history.');
     } finally {
       setLoading(false);

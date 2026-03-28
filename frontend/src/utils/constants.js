@@ -1,3 +1,8 @@
+/**
+ * Business Logic Constants: Charity Taxonomy
+ * Defines the standardized categories for organization classification 
+ * and public exploration filters.
+ */
 export const CHARITY_CATEGORIES = [
   { value: 'Golf', label: 'Golf & Sports' },
   { value: 'Environment', label: 'Environment & Nature' },

@@ -33,7 +33,7 @@ const MyWins = () => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       fetchWins(); // Refresh to show "Submitted" status
-    } catch (err) {
+    } catch {
       alert("Failed to upload proof. Please try again.");
     } finally {
       setUploading(null);

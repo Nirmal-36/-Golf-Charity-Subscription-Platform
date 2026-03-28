@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+const MotionDiv = motion.div;
 import api from '../../api/axios';
 import { Link } from 'react-router-dom';
 import { Target, Calendar, Trophy, Zap, ArrowLeft, AlertCircle, Timer, Clock } from 'lucide-react';
@@ -29,7 +30,7 @@ const AdminDraws = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [countdown, setCountdown] = useState('00d 00h 00m 00s');
 
-  const fetchDrawData = async () => {
+  const fetchDrawData = useCallback(async () => {
     try {
       const [currentRes, historyRes] = await Promise.all([
         api.get('/api/draws/current/'),
@@ -42,11 +43,11 @@ const AdminDraws = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchDrawData();
-  }, []);
+  }, [fetchDrawData]);
 
   useEffect(() => {
     if (!currentDraw || currentDraw.status !== 'scheduled') return;
@@ -74,7 +75,7 @@ const AdminDraws = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [currentDraw]);
+  }, [currentDraw, handleSyncDraws]);
 
   const handleUpdateDraw = async () => {
     try {
@@ -93,7 +94,7 @@ const AdminDraws = () => {
       });
       setIsUpdateModalOpen(false);
       fetchDrawData();
-    } catch (err) {
+    } catch {
       alert("Failed to update draw parameters.");
     }
   };
@@ -132,8 +133,8 @@ const AdminDraws = () => {
         setDrawResults(res.data.results);
         fetchDrawData();
       }
-    } catch (err) {
-      alert("Draw operation failed: " + (err.response?.data?.error || err.message));
+    } catch (error) {
+      alert("Draw operation failed: " + (error.response?.data?.error || error.message));
     } finally {
       setIsSimulating(false);
       setExecuting(false);
@@ -146,25 +147,25 @@ const AdminDraws = () => {
       await api.post(`/api/draws/admin/draws/${currentDraw.id}/publish/`);
       alert("Results published successfully!");
       fetchDrawData();
-    } catch (err) {
+    } catch {
       alert("Failed to publish results.");
     } finally {
       setIsPublishing(false);
     }
   };
 
-  const handleSyncDraws = async () => {
+  const handleSyncDraws = useCallback(async () => {
     if (isSyncing) return;
     setIsSyncing(true);
     try {
       await api.post('/api/draws/admin/draws/sync/');
       fetchDrawData();
-    } catch (err) {
-      console.error("Sync failed:", err);
+    } catch {
+      console.error("Sync failed:");
     } finally {
       setIsSyncing(false);
     }
-  };
+  }, [isSyncing, fetchDrawData]);
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading draw management...</div>;
 
@@ -308,7 +309,7 @@ const AdminDraws = () => {
         </div>
 
         {drawResults && (
-          <motion.div 
+          <MotionDiv 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-green-600 rounded-[32px] p-8 text-white shadow-2xl space-y-6"
@@ -356,7 +357,7 @@ const AdminDraws = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </MotionDiv>
         )}
 
         {currentDraw.status === 'completed' && !drawResults && (
@@ -390,7 +391,7 @@ const AdminDraws = () => {
 
         {/* Simulation Results Preview */}
         {simulationResults && (
-           <motion.div 
+           <MotionDiv 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-brand-dark rounded-[32px] p-8 text-white border-4 border-dashed border-white/10"
@@ -458,7 +459,7 @@ const AdminDraws = () => {
                   </div>
                 </div>
              </div>
-           </motion.div>
+           </MotionDiv>
         )}
 
         {/* MODALS */}

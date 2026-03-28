@@ -1,16 +1,23 @@
 import React from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import ScoreReel from '../../components/ScoreReel';
+import { 
+  Trophy, Target, Heart, TrendingUp, 
+  Clock, ArrowRight, CheckCircle, Shield 
+} from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
-import { Trophy, Heart, ArrowRight, UserCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
-import SubscriptionBadge from '../../components/SubscriptionBadge';
-import { getCategoryIcon } from '../../utils/icons';
+import { useAuth } from '../../hooks/useAuth';
 import { resolveImageUrl } from '../../utils/image';
+import { getCategoryIcon } from '../../utils/icons';
 
+/**
+ * Member Core: Dashboard
+ * The primary command center for standard platform members.
+ * Orchestrates real-time score tracking, subscription status monitoring, 
+ * and philanthropic impact visualization.
+ */
 const Dashboard = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
+  // Security: Role-based redirection for administrative staff
   if (user?.is_staff) {
     return <Navigate to="/admin/dashboard" replace />;
   }
@@ -21,7 +28,7 @@ const Dashboard = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-5xl mx-auto p-4 md:p-8"
     >
-      {/* Page Header */}
+      {/* Page Header: Identity & CTA Bar */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
           <h1 className="text-4xl font-black text-brand-dark tracking-tight">
@@ -49,7 +56,7 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* Main Column */}
+        {/* Column: Activity & Performance */}
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -57,7 +64,7 @@ const Dashboard = () => {
           className="lg:col-span-2 space-y-6"
         >
 
-          {/* Active Scores Section */}
+          {/* Component: ScoreReel - Handled via dedicated hook/component */}
           <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-2">
@@ -68,7 +75,7 @@ const Dashboard = () => {
             <ScoreReel />
           </section>
 
-          {/* Next Draw Teaser */}
+          {/* Strategic Reveal: Next Draw Announcement */}
           <section className="bg-gradient-to-br from-brand-green to-[#0f281e] text-white rounded-2xl p-6 shadow-sm">
             <h2 className="text-xl font-bold mb-2">Monthly Charity Draw</h2>
             <p className="text-gray-300 mb-6">The next draw happens on the 1st of the month. Match 5 numbers to win the rolling jackpot!</p>
@@ -79,8 +86,9 @@ const Dashboard = () => {
 
         </motion.div>
 
-        {/* Sidebar Column */}
+        {/* Column: Status & Philanthropy Widgets */}
         <motion.div
+           // ... variants ...
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}

@@ -1,24 +1,41 @@
 import React, { useState } from 'react';
-import api from '../../api/axios';
+// import motion if needed
+import { 
+  Check, Shield, Zap, ArrowRight, Loader2, 
+  Trophy, Heart, Target 
+} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { Target, Heart, Trophy, CheckCircle2 } from 'lucide-react';
-import { Navigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import api from '../../api/axios';
 
+/**
+ * Conversion Point: Subscription
+ * The primary value proposition and checkout gateway for new members.
+ * Orchestrates tiered plan selection (Monthly/Yearly) and initiates 
+ * secure Stripe Checkout sessions.
+ */
 const Subscription = () => {
   const { user } = useAuth();
+  
+  // State: Checkout lifecycle & Plan configuration
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [planType, setPlanType] = useState('monthly');
 
+  // Security: Redirection for administrative identities
   if (user?.is_staff) {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
+  // Logic: Prevent redundant subscriptions for active members
   if (user?.subscription_status === 'active') {
     return <Navigate to="/" />;
   }
 
+  /**
+   * Transaction Handler: handleSubscribe
+   * Executes the transition to the secure Stripe Checkout environment.
+   * Maps local plan configurations to Stripe Price IDs.
+   */
   const handleSubscribe = async () => {
     setLoading(true);
     setError(null);
@@ -28,10 +45,10 @@ const Subscription = () => {
         cancel_url: `${window.location.origin}/cancel`,
         plan_type: planType,
       });
-      // Redirect to Stripe Checkout URL
+      // Gateway Transaction: Hand-off to encrypted Stripe terminal
       window.location.href = data.checkout_url;
-    } catch (err) {
-      setError('Failed to initiate checkout. Please try again later.');
+    } catch {
+      setError('Transaction Alert: Failed to initialize secure checkout protocol.');
       setLoading(false);
     }
   };

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { Search, User, Mail, CreditCard, Heart, ArrowLeft, Edit2, ChevronRight, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import CustomSelect from '../../components/ui/CustomSelect';
 import CustomModal from '../../components/ui/CustomModal';
 

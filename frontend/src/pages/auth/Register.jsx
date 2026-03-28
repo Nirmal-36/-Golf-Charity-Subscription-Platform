@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { User, Mail, Lock, UserPlus, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../api/axios';
 
+/**
+ * Onboarding Pipeline: Register
+ * Manages the multi-step registration for standard platform Members.
+ * Includes dynamic charity partner synchronization to ensure new 
+ * users can immediately commit to a philanthropic cause.
+ */
 const Register = () => {
   const { register } = useAuth();
   const [formData, setFormData] = useState({
@@ -13,24 +20,26 @@ const Register = () => {
     last_name: '',
     user_role: 'member'
   });
+  
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
+  // State: Dynamic philanthropy registry
   const [charities, setCharities] = useState([]);
   const [loadingCharities, setLoadingCharities] = useState(true);
 
   React.useEffect(() => {
+    /**
+     * Infrastructure Sync: fetchCharities
+     * Retrieves the latest verified partner list for user selection.
+     */
     const fetchCharities = async () => {
       try {
         const res = await api.get('/api/charities/');
         setCharities(res.data);
-      } catch (err) {
-        console.error("Failed to load charities", err);
+      } catch {
+        console.error("UX Notification: Partner synchronization failed.");
       } finally {
         setLoadingCharities(false);
       }
@@ -38,18 +47,29 @@ const Register = () => {
     fetchCharities();
   }, []);
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  /**
+   * Transaction Handler: handleSubmit
+   * Submits the membership application and associates the user 
+   * with their selected philanthropic partner.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
     try {
       await register({
         ...formData,
         selected_charity_id: formData.selected_charity
       });
+      // Lifecycle: Direct to login after successful creation
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Registration failed. Please try a different username or email.');
+      setError(err.response?.data?.detail || 'Enrollment Alert: Security protocols rejected this registration.');
     } finally {
       setLoading(false);
     }

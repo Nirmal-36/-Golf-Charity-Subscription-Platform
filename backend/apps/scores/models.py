@@ -3,6 +3,11 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 
 class GolfScore(models.Model):
+    """
+    Represents a single golf round score submitted by a user.
+    Uses Stableford format (range 1-45).
+    Includes automated logic to maintain only the latest 5 active scores.
+    """
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='scores')
     score = models.PositiveIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(45)]
@@ -15,6 +20,10 @@ class GolfScore(models.Model):
         ordering = ['-played_at', '-submitted_at']
 
     def save(self, *args, **kwargs):
+        """
+        Custom save logic to enforce the 'Last 5 Rolling' requirement.
+        Automatically deactivates older scores when a 6th score is submitted.
+        """
         if not self.played_at:
             from django.utils import timezone
             self.played_at = timezone.now().date()
@@ -23,14 +32,14 @@ class GolfScore(models.Model):
         super().save(*args, **kwargs)
         
         if is_new:
-            # Maintain only top 5 active scores for this user basing on played_at date
+            # Re-evaluate active scores to maintain the rolling window of 5.
             active_scores = GolfScore.objects.filter(
                 user=self.user, 
                 is_active=True
             ).order_by('-played_at', '-submitted_at')
             
             if active_scores.count() > 5:
-                # Deactivate all but the latest 5
+                # Identify and deactivate all scores beyond the latest 5.
                 scores_to_deactivate = active_scores[5:]
                 GolfScore.objects.filter(id__in=[s.id for s in scores_to_deactivate]).update(is_active=False)
 

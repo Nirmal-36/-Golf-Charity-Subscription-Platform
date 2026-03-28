@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Mail, Lock, LogIn, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
+/**
+ * Authentication Gateway: Login
+ * Facilitates secure user access through JWT credential verification.
+ * Implements role-based redirection to ensure administrators, partners, 
+ * and members lands on their respective command centers.
+ */
 const Login = () => {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
@@ -10,12 +17,20 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  /**
+   * Transaction Handler: handleSubmit
+   * Orchestrates the authentication request and executes the 
+   * redirection logic based on user authorization levels.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
     try {
       const res = await login(email, password);
+      
+      // Routing Logic: Identity-aware redirection
       if (res.user.is_staff || res.user.user_role === 'admin') {
         navigate('/admin/dashboard');
       } else if (res.user.user_role === 'organization') {
@@ -24,7 +39,7 @@ const Login = () => {
         navigate('/dashboard');
       }
     } catch (err) {
-      const message = err.response?.data?.detail || 'Login failed. Please check your credentials.';
+      const message = err.response?.data?.detail || 'Identity Verification Failed: Please check your credentials.';
       setError(message);
     } finally {
       setLoading(false);

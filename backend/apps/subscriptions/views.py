@@ -16,6 +16,10 @@ from .services import create_checkout_session
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 class CreateCheckoutSessionView(APIView):
+    """
+    Onboarding Interface: Initializes a Stripe Checkout Session for new subscriptions.
+    Supports both Monthly and Yearly membership tiers based on request parameters.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -27,9 +31,14 @@ class CreateCheckoutSessionView(APIView):
             session = create_checkout_session(request.user, success_url, cancel_url, plan_type=plan_type)
             return Response({'checkout_url': session.url})
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': f"Stripe Session Creation Failed: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 class CreatePortalSessionView(APIView):
+    """
+    Self-Service Management: Generates a Stripe Billing Portal link.
+    Allows members to update payment methods, download invoices, 
+    and manage subscription tiers autonomously.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -37,7 +46,7 @@ class CreatePortalSessionView(APIView):
         
         try:
             if not request.user.stripe_customer_id:
-                return Response({'error': 'No billing history found. Please subscribe first.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'No active billing profile identified. Please subscribe to access the portal.'}, status=status.HTTP_400_BAD_REQUEST)
                 
             session = stripe.billing_portal.Session.create(
                 customer=request.user.stripe_customer_id,
@@ -45,9 +54,13 @@ class CreatePortalSessionView(APIView):
             )
             return Response({'portal_url': session.url})
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': f"Portal Initialization Failed: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 class SubscriptionHistoryView(APIView):
+    """
+    Member Archive: Retrieves historical Stripe invoices for the authenticated user.
+    Provides transparent access to past contributions and membership payments.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -72,10 +85,15 @@ class SubscriptionHistoryView(APIView):
                 })
             return Response({'invoices': history})
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': f"Invoice Retrieval Failed: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class StripeWebhookView(APIView):
+    """
+    Automated Reconciliation Hub: Processes real-time event notifications from Stripe.
+    Coordinates subscription lifecycle updates, payment confirmations, and 
+    philanthropic financial allocations.
+    """
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -84,47 +102,45 @@ class StripeWebhookView(APIView):
         event = None
 
         try:
+            # Security: Verify that the notification originated from Stripe
             event = stripe.Webhook.construct_event(
                 payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
             )
             print(f"WEBHOOK RECEIVED: {event['type']}")
         except ValueError as e:
-            print("WEBHOOK ERROR: Invalid payload")
             return HttpResponse(status=400)
         except stripe.error.SignatureVerificationError as e:
-            print("WEBHOOK ERROR: Invalid signature. Check STRIPE_WEBHOOK_SECRET.")
             return HttpResponse(status=400)
 
-        # Handle the event
+        # Event Dispatcher: Routing based on Stripe Event Type
         if event['type'] == 'checkout.session.completed':
             session = event['data']['object']
             metadata = session.get('metadata', {})
             
             if metadata.get('type') == 'one_time_donation':
-                print(f"WEBHOOK: Handling one_time_donation for charity_id: {metadata.get('charity_id')}")
                 self.handle_one_time_donation(session)
             else:
-                print(f"WEBHOOK: Handling checkout.session.completed for user_id: {session.get('metadata', {}).get('user_id')}")
                 self.handle_checkout_session(session)
             
         elif event['type'] == 'invoice.payment_succeeded':
             invoice = event['data']['object']
-            print(f"WEBHOOK: Handling invoice.payment_succeeded for customer: {invoice.get('customer')}")
             self.handle_invoice_payment_succeeded(invoice)
             
         elif event['type'] == 'invoice.payment_failed':
             invoice = event['data']['object']
-            print(f"WEBHOOK: Handling invoice.payment_failed for customer: {invoice.get('customer')}")
             self.handle_invoice_payment_failed(invoice)
 
         elif event['type'] == 'customer.subscription.deleted':
             subscription = event['data']['object']
-            print(f"WEBHOOK: Handling customer.subscription.deleted for customer: {subscription.get('customer')}")
             self.handle_subscription_deleted(subscription)
 
         return HttpResponse(status=200)
 
     def handle_checkout_session(self, session):
+        """
+        Subscription Initialization: Link a Stripe customer/subscription to a platform user.
+        Calculates the professional end date for the first billing period.
+        """
         metadata = session.get('metadata', {})
         user_id = metadata.get('user_id')
         plan_type = metadata.get('plan_type', 'monthly')
@@ -137,13 +153,13 @@ class StripeWebhookView(APIView):
                 user.subscription_status = 'active'
                 user.subscription_plan = plan_type
                 
-                # Fetch end date from Stripe (Phase 13 robust fix)
+                # Persistence Logic: Extract explicit period boundaries from Stripe
                 if user.stripe_subscription_id:
                     sub = stripe.Subscription.retrieve(user.stripe_subscription_id)
                     from django.utils import timezone
                     import datetime
                     
-                    # Robust fallback: use latest_invoice period end if current_period_end is missing
+                    # Robust failover for timestamp extraction
                     end_ts = getattr(sub, 'current_period_end', None)
                     if not end_ts and sub.latest_invoice:
                         inv = stripe.Invoice.retrieve(sub.latest_invoice)
@@ -157,7 +173,7 @@ class StripeWebhookView(APIView):
                 
                 user.save()
                 
-                # Send Welcome Email (Phase 13 Improvement)
+                # Communication Hook: Trigger the personalized welcome sequence
                 try:
                     from apps.core.emails import send_welcome_email
                     send_welcome_email.delay(user.email, plan_type)
@@ -167,25 +183,32 @@ class StripeWebhookView(APIView):
                 pass
 
     def handle_invoice_payment_succeeded(self, invoice):
+        """
+        Financial Split Engine: Processes successful recurring payments.
+        Executes the platform's core multi-tier allocation:
+        1. 40% -> Current Monthly Prize Pool
+        2. 10%+ -> Member's Selected Charity
+        3. 50% -> Platform Operations & Growth
+        Also creates a formal Donation record for tax/transparency purposes.
+        """
         customer_id = invoice.get('customer')
-        amount_paid = invoice.get('amount_paid', 0) / 100  # Convert cents to dollars
+        amount_paid = invoice.get('amount_paid', 0) / 100  # Fractional conversion (Cents to USD)
         
         if customer_id:
             try:
                 user = User.objects.get(stripe_customer_id=customer_id)
                 user.subscription_status = 'active'
                 
-                # Update next billing date (Phase 13 robust fix)
+                # Persistence: Advance the membership expiration date
                 sub_id = invoice.get('subscription')
                 if sub_id:
                     sub = stripe.Subscription.retrieve(sub_id)
                     from django.utils import timezone
                     import datetime
                     
-                    # Robust fallback: use invoice period end if current_period_end is missing
                     end_ts = getattr(sub, 'current_period_end', None)
                     if not end_ts:
-                        # Since we are in the invoice handler, we use this invoice's period end
+                        # Fallback: Extract from the current invoice period definition
                         if invoice.get('lines') and invoice['lines']['data']:
                              end_ts = invoice['lines']['data'][0]['period']['end']
                     
@@ -194,19 +217,18 @@ class StripeWebhookView(APIView):
                             datetime.datetime.fromtimestamp(end_ts)
                         )
                 
-                # Financial Split Logic (Phase 12)
-                # 40% Prize Pool, 10%+ Charity, 50% Platform
+                # Allocation Logic: The "Heart" of the Platform
                 prize_allocation = amount_paid * 0.40
                 charity_percentage = float(user.donation_percentage) / 100
                 charity_allocation = amount_paid * charity_percentage
                 
-                # 1. Update Current Draw Pool
+                # Step 1: Capitalize the active prize pool
                 current_draw = DrawRound.objects.filter(status='scheduled').order_by('draw_date').first()
                 if current_draw:
                     current_draw.total_pool = float(current_draw.total_pool) + prize_allocation
                     current_draw.save()
                 
-                # 2. Update Charity & User Stats
+                # Step 2: Attribute impact to the Charity and Member
                 if user.selected_charity:
                     charity = user.selected_charity
                     charity.total_received = float(charity.total_received) + charity_allocation
@@ -214,7 +236,7 @@ class StripeWebhookView(APIView):
                     
                     user.total_donated = float(user.total_donated) + charity_allocation
                     
-                    # 3. Create Donation record (Phase 21)
+                    # Step 3: Formalize the philanthropic transaction
                     Donation.objects.create(
                         user=user,
                         charity=charity,
@@ -224,12 +246,17 @@ class StripeWebhookView(APIView):
                     )
                 
                 user.save()
-                print(f"FINANCIAL SPLIT COMPLETE: ${prize_allocation} to Prize, ${charity_allocation} to {user.selected_charity.name if user.selected_charity else 'None'}")
+                print(f"FINANCIAL RECONCILIATION: ${prize_allocation} (Prize) | ${charity_allocation} (Charity) | ${amount_paid - prize_allocation - charity_allocation} (Ops)")
                 
             except User.DoesNotExist:
                 pass
 
     def handle_invoice_payment_failed(self, invoice):
+        """
+        Lifecycle Guard: Handles failed subscription renewals.
+        Immediately transitions the user to an 'inactive' state to restrict 
+        access to pending draws.
+        """
         customer_id = invoice.get('customer')
         if customer_id:
             try:
@@ -240,6 +267,10 @@ class StripeWebhookView(APIView):
                 pass
 
     def handle_subscription_deleted(self, subscription):
+        """
+        Lifecycle Exit: Finalizes a subscription cancellation.
+        Clears Stripe references and marks the membership as inactive.
+        """
         customer_id = subscription.get('customer')
         if customer_id:
             try:
@@ -251,6 +282,10 @@ class StripeWebhookView(APIView):
                 pass
 
     def handle_one_time_donation(self, session):
+        """
+        Philanthropic Accelerator: Processes independent, one-time contributions.
+        Attributes 100% of the net amount to the target charity.
+        """
         metadata = session.get('metadata', {})
         charity_id = metadata.get('charity_id')
         amount = float(metadata.get('amount', 0))
@@ -266,15 +301,17 @@ class StripeWebhookView(APIView):
                 charity.total_received = float(charity.total_received) + amount
                 charity.save()
                 
-                # Create Donation record (Phase 21)
+                # Step 1: Link to member account if exists (Ghost donors allowed)
                 user = User.objects.filter(email=customer_email).first()
+                
+                # Step 2: Formalize the independent donation
                 Donation.objects.create(
-                    user=user, # Can be null for guest donations
+                    user=user,
                     charity=charity,
                     amount=amount,
                     plan_type='one_time',
-                    stripe_invoice_id=session.get('id', '') # For one-time, this is the session ID
+                    stripe_invoice_id=session.get('id', '')
                 )
-                print(f"ONE-TIME DONATION COMPLETE: ${amount} to {charity.name} from {customer_email}")
+                print(f"ONE-TIME IMPACT RECORDED: ${amount} to {charity.name}")
             except Charity.DoesNotExist:
-                print(f"WEBHOOK ERROR: Charity {charity_id} not found for one-time donation.")
+                pass

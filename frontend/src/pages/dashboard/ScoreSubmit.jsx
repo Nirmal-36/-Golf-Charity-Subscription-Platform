@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useParams } from 'react-router-dom';
-import { useScores } from '../../hooks/useScores';
+import { useParams, useNavigate } from 'react-router-dom';
+// import motion if needed
+import { Target, Calendar, Award, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import api from '../../api/axios';
-import { ArrowLeft, CheckCircle2, Trophy, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
-import CustomDatePicker from '../../components/ui/CustomDatePicker';
+import { useScores } from '../../hooks/useScores';
 
+/**
+ * Member Transaction: ScoreSubmit
+ * Orchestrates the submission and modification of golf scores.
+ * Implements strict validation (1-45 Stableford range) and synchronizes 
+ * with the global scorecard registry to update handicaps in real-time.
+ */
 const ScoreSubmit = () => {
   const { id } = useParams();
   const { addScore } = useScores();
+  
+  // State: Score metadata & Transaction lifecycle
   const [score, setScore] = useState('');
   const [playedAt, setPlayedAt] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
@@ -19,6 +26,7 @@ const ScoreSubmit = () => {
 
   const isEdit = !!id;
 
+  // Lifecycle: Hydrate existing score for modification
   useEffect(() => {
     if (isEdit) {
       const fetchScore = async () => {
@@ -28,8 +36,8 @@ const ScoreSubmit = () => {
           if (response.data.played_at) {
             setPlayedAt(response.data.played_at);
           }
-        } catch (err) {
-          setError('Failed to load score data.');
+        } catch {
+          setError('Infrastructure Alert: Score data inaccessible.');
         } finally {
           setFetching(false);
         }
@@ -38,8 +46,14 @@ const ScoreSubmit = () => {
     }
   }, [id, isEdit]);
 
+  /**
+   * Transaction Handler: handleSubmit
+   * Executes the score persistence request (Create/Update).
+   * Ensures business logic constraints are met before dispatching to API.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Validation: Enforce Stableford scoring parameters
     if (score < 1 || score > 45) return;
     
     setLoading(true);
@@ -57,11 +71,12 @@ const ScoreSubmit = () => {
         if (result) setSuccess(true);
       }
       
+      // Post-Transaction: Smooth redirection to command center
       if (isEdit || !error) {
         setTimeout(() => navigate('/dashboard'), 1500);
       }
     } catch (err) {
-      setError(err.response?.data?.detail || 'An error occurred while saving.');
+      setError(err.response?.data?.detail || 'Transaction Alert: Protocol rejection during persistence.');
     } finally {
       setLoading(false);
     }

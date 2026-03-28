@@ -1,8 +1,14 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Heart, ChevronRight, Share2, Globe, Trophy } from 'lucide-react';
+// import motion if needed
+import { Heart, Share2, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+/**
+ * Transaction Gateway: DonationSuccess
+ * The post-donation landing terminal for independent contributions.
+ * Focuses on philanthropic validation, impact multiplication 
+ * messaging, and social advocacy CTAs.
+ */
 const DonationSuccess = () => {
   return (
     <div className="min-h-screen bg-brand-light flex items-center justify-center p-4">

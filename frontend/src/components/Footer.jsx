@@ -84,7 +84,7 @@ const Footer = () => {
         </div>
 
         <div className="pt-8 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400 font-medium uppercase tracking-widest">
-          <p>© 2026 Golf Charity Platform. All rights reserved.</p>
+          <p>© {currentYear} Golf Charity Platform. All rights reserved.</p>
           <div className="flex gap-8">
             <Link to="/terms" className="hover:text-brand-dark transition-colors">Terms of Service</Link>
             <Link to="/privacy" className="hover:text-brand-dark transition-colors">Privacy Policy</Link>

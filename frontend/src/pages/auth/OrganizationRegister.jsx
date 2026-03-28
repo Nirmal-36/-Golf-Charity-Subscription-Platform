@@ -1,13 +1,22 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { 
+  Building2, Mail, Lock, User, 
+  ArrowRight, CheckCircle, Loader2 
+} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { Heart, User, Globe, ArrowRight, ArrowLeft, CheckCircle2, ChevronDown } from 'lucide-react';
 import { CHARITY_CATEGORIES } from '../../utils/constants';
-import CustomSelect from '../../components/ui/CustomSelect';
 
+/**
+ * Partner Onboarding: OrganizationRegister
+ * A sophisticated multi-step pipeline for onboarding verified Charity Partners.
+ * Orchestrates a seamless transition from personal identity verification 
+ * to organizational profile provisioning.
+ */
 const OrganizationRegister = () => {
   const { registerOrganization } = useAuth();
+  
+  // Logic: Sequential State Management (1: Account -> 2: Profile -> 3: Success)
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     username: '',
@@ -20,23 +29,30 @@ const OrganizationRegister = () => {
     org_description: '',
     org_logo_url: ''
   });
+  
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  /**
+   * Transaction Handler: handleSubmit
+   * Executes the final organizational creation request.
+   * Upon success, transitions the UX to the verification confirmation stage.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
       await registerOrganization(formData);
-      setStep(3); // Success step
+      // UX Lifecycle: Transition to the 'Received' confirmation state
+      setStep(3); 
     } catch (err) {
-      setError(err.response?.data?.detail || 'Registration failed. Please check your details and try again.');
+      setError(err.response?.data?.detail || 'Onboarding Alert: Synchronization failed. Please verify your data.');
       setLoading(false);
     }
   };
@@ -48,7 +64,7 @@ const OrganizationRegister = () => {
     <div className="min-h-screen bg-brand-light flex items-center justify-center p-4 py-20">
       <div className="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-5 bg-white rounded-[40px] shadow-2xl border border-gray-100 overflow-hidden">
         
-        {/* Left Sidebar - Status */}
+        {/* Component: Managed Sidebar Navigation */}
         <div className="lg:col-span-2 bg-brand-dark p-12 text-white flex flex-col justify-between relative overflow-hidden">
           <div className="relative z-10">
             <Link to="/" className="inline-flex items-center gap-2 mb-12 group">
@@ -77,7 +93,7 @@ const OrganizationRegister = () => {
           <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-brand-green/10 rounded-full blur-3xl"></div>
         </div>
 
-        {/* Right Section - Form */}
+        {/* Component: Interactive Transaction Area */}
         <div className="lg:col-span-3 p-12 relative">
           <AnimatePresence mode="wait">
             {step === 1 && (
@@ -109,7 +125,7 @@ const OrganizationRegister = () => {
                     type="submit"
                     className="w-full py-4 bg-brand-green text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-brand-green/20 mt-8"
                   >
-                    Next Logic <ArrowRight size={20} />
+                    Continue to Profile <ArrowRight size={20} />
                   </button>
                 </form>
               </motion.div>
@@ -171,7 +187,7 @@ const OrganizationRegister = () => {
                       disabled={loading}
                       className="flex-1 py-4 bg-brand-green text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-brand-green/20 disabled:opacity-50"
                     >
-                      {loading ? 'Creating Portal...' : 'Get Started'} <CheckCircle2 size={20} />
+                      {loading ? 'Initiating Portal...' : 'Get Started'} <CheckCircle2 size={20} />
                     </button>
                   </div>
                 </form>
@@ -207,6 +223,11 @@ const OrganizationRegister = () => {
   );
 };
 
+/**
+ * UI Component: StepIndicator
+ * Displays the current progress through the multi-step registration 
+ * process with visual status feedback.
+ */
 const StepIndicator = ({ active, done, num, title, desc }) => (
   <div className={`flex gap-4 transition-all ${active ? 'opacity-100' : 'opacity-40'}`}>
     <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black border-2 ${done ? 'bg-brand-green border-brand-green text-white' : (active ? 'border-brand-green text-brand-green' : 'border-white/20 text-white')}`}>
@@ -219,6 +240,10 @@ const StepIndicator = ({ active, done, num, title, desc }) => (
   </div>
 );
 
+/**
+ * UI Component: InputField
+ * Standardized input for the registration form with professional styling.
+ */
 const InputField = ({ label, ...props }) => (
   <div>
     <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">{label}</label>

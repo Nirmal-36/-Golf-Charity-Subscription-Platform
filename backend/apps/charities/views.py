@@ -8,7 +8,10 @@ from apps.subscriptions.models import Donation
 from apps.subscriptions.serializers import DonationSerializer
 
 class CharityListView(generics.ListAPIView):
-    """List all active charities"""
+    """
+    Public Charity Directory: Returns a list of all vetted and active Charity Partners.
+    Supports optional filtering by category for streamlined exploration.
+    """
     serializer_class = CharitySerializer
     permission_classes = [permissions.AllowAny]
 
@@ -20,14 +23,20 @@ class CharityListView(generics.ListAPIView):
         return queryset
 
 class CharityDetailView(generics.RetrieveAPIView):
-    """View details of a specific charity"""
+    """
+    Profile Insight: Provides comprehensive details, impact stories, and 
+    media for a specific Charity Partner identified by its slug.
+    """
     queryset = Charity.objects.filter(is_active=True)
     serializer_class = CharitySerializer
     permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
 
 class SelectCharityView(APIView):
-    """Allows an authenticated user to select their chosen charity"""
+    """
+    Identity Personalization: Allows authenticated members to designate a 
+    specific Charity Partner as the primary recipient of their subscription donations.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -40,11 +49,15 @@ class SelectCharityView(APIView):
             user.selected_charity = charity
             user.save()
             
-            return Response({'status': 'charity selected', 'charity_id': charity.id})
+            return Response({'status': 'Target charity updated successfully.', 'charity_id': charity.id})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UpdateDonationPercentageView(APIView):
-    """Update donation percentage (minimum 10%)"""
+    """
+    Philanthropic Tuning: Allows members to adjust the percentage of their 
+    subscription fee directed to their selected charity.
+    Enforces a platform-wide minimum of 10% for baseline impact.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -53,47 +66,49 @@ class UpdateDonationPercentageView(APIView):
             percentage = float(percentage)
             if percentage < 10.0:
                 return Response(
-                    {'error': 'Minimum donation percentage is 10%.'}, 
+                    {'error': 'A minimum donation of 10% is required for platform sustainability.'}, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
             if percentage > 100.0:
-                return Response(
-                    {'error': 'Maximum donation percentage is 100%.'}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return Response({'error': 'Donation percentage cannot exceed 100%.'}, status=status.HTTP_400_BAD_REQUEST)
                 
             user = request.user
             user.donation_percentage = percentage
             user.save()
-            return Response({'status': 'percentage updated', 'percentage': percentage})
+            return Response({'status': 'Donation preference updated.', 'percentage': percentage})
             
         except (TypeError, ValueError):
-            return Response({'error': 'Invalid percentage.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid percentage value provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
 class CharityRegisterView(generics.CreateAPIView):
-    """Public endpoint for charities to apply for partnership"""
+    """
+    Partnership Application: Public endpoint for non-profits to apply for platform inclusion.
+    Profiles are initialized in an 'Inactive' state pending administrative vetting.
+    Triggers an automated application receipt email.
+    """
     queryset = Charity.objects.all()
     serializer_class = CharitySerializer
     permission_classes = [permissions.AllowAny]
 
     def perform_create(self, serializer):
-        # All public applications are disabled by default until admin review
         charity = serializer.save(is_active=False)
         
-        # Send Welcome Email if contact_email is provided
         if charity.contact_email:
             from apps.core.emails import send_charity_welcome_email
             send_charity_welcome_email.delay(charity.contact_email, charity.name)
 
 class MyCharityProfileView(APIView):
-    """Returns the charity profile managed by the authenticated user"""
+    """
+    Partner Dashboard: Allows authenticated Charity Partners to manage their public-facing 
+    profile, update narrative descriptions, and moderate visual assets.
+    """
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         charity = Charity.objects.filter(managed_by=request.user).first()
         if not charity:
             return Response(
-                {"detail": "No charity profile linked to this account."}, 
+                {"detail": "No charity partner profile is currently linked to this account."}, 
                 status=status.HTTP_404_NOT_FOUND
             )
         serializer = CharitySerializer(charity)
@@ -103,11 +118,11 @@ class MyCharityProfileView(APIView):
         charity = Charity.objects.filter(managed_by=request.user).first()
         if not charity:
             return Response(
-                {"detail": "No charity profile linked to this account."}, 
+                {"detail": "No charity partner profile identified for update."}, 
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        # Explicitly handle logo removal if logo_image is sent as an empty string
+        # Identity Logic: Handle explicit asset removal or partial updates.
         data = request.data.copy()
         if 'logo_image' in data and data['logo_image'] == '':
             charity.logo_image.delete(save=False)
@@ -120,7 +135,10 @@ class MyCharityProfileView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CharityDonationsView(generics.ListAPIView):
-    """Returns all donations directed to the authenticated user's charity"""
+    """
+    Partner Audit: Returns a historical ledger of all donations specifically 
+    directed to the authenticated partner's organization.
+    """
     serializer_class = DonationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -130,7 +148,9 @@ class CharityDonationsView(generics.ListAPIView):
 
 class OneTimeDonationView(APIView):
     """
-    Public endpoint to initiate a one-time donation to a specific charity.
+    Public Philanthropy: Standardized entry point for one-time Stripe donations.
+    Handles Stripe Checkout session initialization for both authenticated 
+    members and anonymous public donors.
     """
     permission_classes = [permissions.AllowAny]
 
@@ -141,10 +161,11 @@ class OneTimeDonationView(APIView):
         cancel_url = request.data.get('cancel_url', f'http://localhost:5173/charity/{slug}')
         
         if not amount or float(amount) <= 0:
-            return Response({'error': 'Invalid donation amount.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'A valid donation amount is required.'}, status=status.HTTP_400_BAD_REQUEST)
             
         try:
             from apps.subscriptions.services import create_one_time_donation_session
+            # Priority: Use authenticated email if available, otherwise use provided input
             customer_email = request.user.email if request.user.is_authenticated else request.data.get('email')
             
             session = create_one_time_donation_session(
@@ -156,4 +177,4 @@ class OneTimeDonationView(APIView):
             )
             return Response({'checkout_url': session.url})
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': f"Stripe Session Initialization Failed: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)

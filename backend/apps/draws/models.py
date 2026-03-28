@@ -2,6 +2,10 @@ from django.db import models
 from django.conf import settings
 
 class DrawRound(models.Model):
+    """
+    Represents a monthly draw event.
+    Tracks state, jackpot amounts, and winning number sequences.
+    """
     STATUS_CHOICES = [
         ('scheduled', 'Scheduled'),
         ('running', 'Running'),
@@ -26,20 +30,28 @@ class DrawRound(models.Model):
         return f"Draw {self.id} on {self.draw_date.strftime('%Y-%m-%d')}"
 
 class DrawEntry(models.Model):
+    """
+    A single user entry into a specific Draw Round.
+    Stores the user's selected/generated numbers and match results after execution.
+    """
     draw = models.ForeignKey(DrawRound, on_delete=models.CASCADE, related_name='entries')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='draw_entries')
-    numbers = models.JSONField() # e.g. [3, 15, 27, 41, 7]
+    numbers = models.JSONField()
     matches = models.PositiveIntegerField(default=0)
     tier_won = models.PositiveIntegerField(null=True, blank=True)
     prize_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     class Meta:
-        unique_together = ('draw', 'user') # Users can only have 1 entry per draw
+        unique_together = ('draw', 'user')
 
     def __str__(self):
         return f"{self.user.email} - Draw {self.draw.id}"
 
 class DrawWinner(models.Model):
+    """
+    Official winner records generated post-draw.
+    Tracks the verification lifecycle from proof submission to payout.
+    """
     STATUS_CHOICES = [
         ('pending_proof', 'Pending Proof'),
         ('proof_submitted', 'Proof Submitted'),
@@ -62,9 +74,13 @@ class DrawWinner(models.Model):
         return f"Winner: {self.user.email} - Tier {self.tier}"
 
 class AdminAuditLog(models.Model):
+    """
+    Internal ledger for administrative actions (payouts, verification, triggers).
+    Ensures accountability and transparency in the platform's financial operations.
+    """
     admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    action = models.CharField(max_length=255) # e.g. "Approved Winner #12"
-    resource_type = models.CharField(max_length=50) # e.g. "DrawWinner"
+    action = models.CharField(max_length=255)
+    resource_type = models.CharField(max_length=50)
     resource_id = models.PositiveIntegerField()
     timestamp = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True)

@@ -1,9 +1,14 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { Heart, ShieldCheck, Zap, ArrowRight, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Check, Trophy, Heart, ShieldCheck, Zap, ArrowRight } from 'lucide-react';
 
+/**
+ * Value Proposition: Membership Page
+ * Outlines the tiered subscription model (Monthly/Annual) and 
+ * highlights the philanthropic benefits and platform-exclusive features.
+ */
 const Membership = () => {
+  // Logic: Service Tiers & Feature Matrix
   const plans = [
     {
       name: 'Eagle Member',
@@ -40,7 +45,7 @@ const Membership = () => {
   return (
     <div className="bg-brand-light min-h-screen">
       
-      {/* Header */}
+      {/* Visual Header: Mission Statement */}
       <section className="bg-white border-b border-gray-100 py-24 mb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-gold/10 text-brand-gold rounded-full text-xs font-black uppercase tracking-widest mb-6">
@@ -54,6 +59,7 @@ const Membership = () => {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+        {/* Experience Selector: Plan Cards */}
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {plans.map((plan, i) => (
             <motion.div
@@ -67,7 +73,7 @@ const Membership = () => {
             >
               {plan.popular && (
                 <div className="absolute top-8 -right-12 rotate-45 bg-brand-green text-white px-12 py-2 text-xs font-black uppercase tracking-widest">
-                  Popular
+                  Popular Option
                 </div>
               )}
 
@@ -104,7 +110,7 @@ const Membership = () => {
           ))}
         </div>
 
-        {/* Benefits Grid */}
+        {/* Global Assurance Grid: Security & Trust */}
         <div className="mt-32 grid grid-cols-1 md:grid-cols-3 gap-12 text-center border-t border-gray-100 pt-32">
            {[
              { icon: Heart, title: 'Charity First', desc: '10% of every payment is automatically routed to your chosen partner.' },

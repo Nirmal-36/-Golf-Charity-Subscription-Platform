@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { Link } from 'react-router-dom';
 import { Trophy, CheckCircle, Clock, ArrowLeft, DollarSign, X, ShieldCheck, ExternalLink } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 
 const AdminPayouts = () => {
   const [payouts, setPayouts] = useState([]);
@@ -37,7 +37,7 @@ const AdminPayouts = () => {
       await api.post(`/api/draws/admin/winners/${winnerId}/review/`, { action, notes });
       alert(`Winner ${action}d successfully.`);
       fetchData(); // Refresh both
-    } catch (err) {
+    } catch {
       alert("Verification failed.");
     }
   };
@@ -48,7 +48,7 @@ const AdminPayouts = () => {
       await api.post(`/api/draws/admin/winners/${winnerId}/review/`, { action: 'mark_paid', notes: 'Paid by admin' });
       alert("Status updated to PAID successfully.");
       fetchData();
-    } catch (err) {
+    } catch {
       alert("Failed to update status.");
     }
   };
@@ -61,7 +61,7 @@ const AdminPayouts = () => {
       setTimeout(() => {
         fetchData();
       }, 1000);
-    } catch (err) {
+    } catch {
       alert("Payout failed.");
       setPayoutStatus('idle');
     }

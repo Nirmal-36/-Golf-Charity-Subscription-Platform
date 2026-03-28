@@ -2,6 +2,11 @@ from django.db import models
 from django.dispatch import receiver
 
 class Charity(models.Model):
+    """
+    Core Charity organization model.
+    Tracks metadata, visual assets, and financial impact.
+    Includes automated approval notification hooks.
+    """
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     description = models.TextField()
@@ -22,12 +27,17 @@ class Charity(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        """
+        Custom save logic to automate slug generation and 
+        trigger approval emails via SendGrid when vetted by admins.
+        """
         if not self.slug:
             from django.utils.text import slugify
             self.slug = slugify(self.name)
             
         if self.pk:
             old_instance = Charity.objects.get(pk=self.pk)
+            # Notify manager when charity profile is formally approved
             if self.is_approved and not old_instance.is_approved:
                 if self.managed_by and self.managed_by.email:
                     from apps.core.emails import send_charity_approval_email
@@ -36,6 +46,10 @@ class Charity(models.Model):
         super().save(*args, **kwargs)
 
 class CharityImage(models.Model):
+    """
+    Gallery assets for a Charity profile.
+    Supports banner identification for premium UI display.
+    """
     charity = models.ForeignKey(Charity, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='charities/gallery/')
     caption = models.CharField(max_length=200, blank=True)
@@ -46,6 +60,9 @@ class CharityImage(models.Model):
         return f"Image for {self.charity.name}"
 
 class CharityEvent(models.Model):
+    """
+    Charity-hosted events/campaigns displayed on the platform.
+    """
     charity = models.ForeignKey(Charity, on_delete=models.CASCADE, related_name='events')
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -61,13 +78,15 @@ class CharityEvent(models.Model):
 
     class Meta:
         ordering = ['event_date']
+
 @receiver(models.signals.post_delete, sender=Charity)
 def delete_associated_organization_user(sender, instance, **kwargs):
     """
-    If a Charity is deleted, ensure the associated organization user is also deleted.
+    Cleanup Hook: Ensures that deleting a Charity record also 
+    purges its associated Organization User account to maintain data integrity.
     """
     if instance.managed_by:
         try:
             instance.managed_by.delete()
         except Exception as e:
-            print(f"Error deleting associated user for charity {instance.name}: {e}")
+            pass

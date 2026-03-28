@@ -6,6 +6,11 @@ from django.core.exceptions import ObjectDoesNotExist
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Comprehensive User Serializer for profile management.
+    Includes flattened read-only fields for selected charity metadata 
+    to simplify frontend consumption.
+    """
     selected_charity_name = serializers.SerializerMethodField()
     selected_charity_category = serializers.SerializerMethodField()
     selected_charity_logo = serializers.SerializerMethodField()
@@ -21,7 +26,8 @@ class UserSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             'subscription_status', 'subscription_plan', 'subscription_end_date',
-            'total_donated', 'last_login', 'selected_charity_name', 'selected_charity_category', 'selected_charity_logo'
+            'total_donated', 'last_login', 'selected_charity_name', 
+            'selected_charity_category', 'selected_charity_logo'
         )
 
     def get_selected_charity_name(self, obj):
@@ -36,6 +42,10 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.selected_charity.logo_image.url if obj.selected_charity.logo_image else obj.selected_charity.logo_url
 
 class RegisterSerializer(serializers.ModelSerializer):
+    """
+    Standard Member Registration Serializer.
+    Enforces minimum password security and requires an initial charity selection.
+    """
     password = serializers.CharField(write_only=True, min_length=8)
     selected_charity_id = serializers.IntegerField(required=True, write_only=True)
     
@@ -59,8 +69,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Enhanced JWT Serializer providing granular error feedback for login failures.
+    Distinguishes between deactivated accounts, missing accounts, and incorrect credentials.
+    Includes full user profile data in the successful response payload.
+    """
     def validate(self, attrs):
-        # Pre-check for deactivated accounts or non-existent accounts to provide better error messages
         username = attrs.get(self.username_field)
         password = attrs.get('password')
         
@@ -68,30 +82,30 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             user = User.objects.get(**{self.username_field: username})
             if not user.is_active:
                 raise serializers.ValidationError({
-                    "detail": "Your account has been deactivated by an administrator. Please contact support."
+                    "detail": "Your account has been deactivated. Please contact administration."
                 })
         except User.DoesNotExist:
             raise serializers.ValidationError({
-                "detail": "No account found with this email address. Please check your spelling or register."
+                "detail": "No account found with this email address. Please register to join the club."
             })
 
-        # Standard JWT validation (handles password check)
         try:
             data = super().validate(attrs)
         except Exception:
             raise serializers.ValidationError({
-                "detail": "Incorrect password. Please try again or reset your password."
+                "detail": "Incorrect password. Please verify your credentials or reset your password."
             })
 
-        # Add extra user info to the payload
+        # Embed serialized user data in the response
         data['user'] = UserSerializer(self.user).data
         return data
 
-from django.db import transaction
-from apps.charities.models import Charity
-from apps.core.emails import send_charity_welcome_email
-
 class OrganizationRegisterSerializer(serializers.Serializer):
+    """
+    Dual-Creation Serializer for Charity Partners.
+    Atomically creates both the administrative User account and the linked Charity profile.
+    Triggers the initial SendGrid welcome sequence upon successful registration.
+    """
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, min_length=8)
@@ -100,15 +114,15 @@ class OrganizationRegisterSerializer(serializers.Serializer):
     
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("A user with this username already exists.")
+            raise serializers.ValidationError("This username is already taken.")
         return value
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("A user with this email already exists.")
+            raise serializers.ValidationError("This email address is already registered.")
         return value
     
-    # Org Fields
+    # Organization Metadata
     org_name = serializers.CharField(max_length=200, write_only=True)
     org_category = serializers.CharField(max_length=100, write_only=True)
     org_description = serializers.CharField(write_only=True)
@@ -116,7 +130,7 @@ class OrganizationRegisterSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         with transaction.atomic():
-            # Create User
+            # Step 1: Initialize User Account
             user = User.objects.create_user(
                 email=validated_data['email'],
                 username=validated_data['username'],
@@ -126,7 +140,7 @@ class OrganizationRegisterSerializer(serializers.Serializer):
                 user_role='organization'
             )
             
-            # Create linked Charity
+            # Step 2: Initialize linked Charity Profile
             Charity.objects.create(
                 name=validated_data['org_name'],
                 category=validated_data['org_category'],
@@ -138,7 +152,7 @@ class OrganizationRegisterSerializer(serializers.Serializer):
                 is_approved=False
             )
             
-            # Send Welcome Email
+            # Step 3: Trigger Welcome Notification
             send_charity_welcome_email.delay(user.email, validated_data['org_name'])
             
             return user

@@ -1,15 +1,25 @@
 import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Trophy, Home } from 'lucide-react';
 
+/**
+ * Transaction Gateway: Success
+ * The post-subscription landing terminal.
+ * Orchestrates a strategic delay to allow Stripe webhooks to 
+ * synchronize the persistence layer before refreshing the user's 
+ * global identity context.
+ */
 const Success = () => {
   const { checkUser } = useAuth();
-  const navigate = useNavigate();
 
+  // Lifecycle: Post-transaction identity synchronization
   useEffect(() => {
-    // When returning from Stripe, wait a second to allow the webhook to fire, 
-    // then refresh the user's subscription status from our DB
+    /**
+     * Infrastructure Sync: checkUser
+     * Polls the backend for updated subscription status.
+     * Strategic Delay: 2000ms ensures asynchronous webhook completion.
+     */
     const timer = setTimeout(async () => {
       await checkUser();
     }, 2000);

@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
+// import motion if needed
+import { 
+  User as UserIcon, Mail, Phone, MapPin, 
+  Settings, Save, CheckCircle, Heart, Loader2 
+} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../api/axios';
-import { User, Mail, UserCircle, Save, Loader2, CheckCircle2, AlertCircle, Heart, ShieldCheck, KeyRound } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 
+/**
+ * Registry: Profile
+ * Manages the user's personal identity and platform preferences.
+ * Orchestrates cross-cutting concerns including basic info updates, 
+ * philanthropic commitment levels, and secure credential rotation.
+ */
 const Profile = () => {
   const { user, setUser } = useAuth();
+  
+  // State: Identity metadata & Transaction status
   const [formData, setFormData] = useState({
     username: '',
     first_name: '',
@@ -17,7 +27,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: null, message: '' });
 
-  // Password Reset State
+  // Security Orchestration: Password Reset State
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -27,6 +37,11 @@ const Profile = () => {
   });
   const [passwordLoading, setPasswordLoading] = useState(false);
 
+  /**
+   * Security Protocol: handleRequestOTP
+   * Initiates the identity verification flow for sensitive account 
+   * modifications (e.g., password changes).
+   */
   const handleRequestOTP = async () => {
     setPasswordLoading(true);
     setStatus({ type: null, message: '' });
@@ -38,16 +53,21 @@ const Profile = () => {
       setOtpSent(true);
       setStatus({ type: 'success', message: 'Verification code sent to your email.' });
     } catch (err) {
-      setStatus({ type: 'error', message: err.response?.data?.detail || 'Failed to send code.' });
+      setStatus({ type: 'error', message: err.response?.data?.detail || 'Security Alert: Failed to dispatch verification code.' });
     } finally {
       setPasswordLoading(false);
     }
   };
 
+  /**
+   * Security Protocol: handleChangePassword
+   * Finalizes the credential rotation process after successful 
+   * verification code validation.
+   */
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (passwordData.new_password !== passwordData.confirm_password) {
-      return setStatus({ type: 'error', message: 'Passwords do not match.' });
+      return setStatus({ type: 'error', message: 'Security Alert: Password confirmation mismatch.' });
     }
     
     setPasswordLoading(true);
@@ -56,17 +76,20 @@ const Profile = () => {
         otp: passwordData.otp,
         new_password: passwordData.new_password
       });
-      setStatus({ type: 'success', message: 'Password changed successfully!' });
+      setStatus({ type: 'success', message: 'Security Protocol: Password updated successfully.' });
+      
+      // UX Lifecycle: Reset security state
       setShowPasswordReset(false);
       setOtpSent(false);
       setPasswordData({ otp: '', new_password: '', confirm_password: '' });
     } catch (err) {
-      setStatus({ type: 'error', message: err.response?.data?.detail || 'Failed to change password.' });
+      setStatus({ type: 'error', message: err.response?.data?.detail || 'Security Alert: Credential update failed.' });
     } finally {
       setPasswordLoading(false);
     }
   };
 
+  // Lifecycle: Hydrate form with current identity state
   useEffect(() => {
     if (user) {
       setFormData({
@@ -79,6 +102,11 @@ const Profile = () => {
     }
   }, [user]);
 
+  /**
+   * Transaction Handler: handleSubmit
+   * Synchronizes the user's identity and philanthropic preferences 
+   * with the persistence layer.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -91,28 +119,28 @@ const Profile = () => {
         last_name: formData.last_name
       };
       
+      // Permission Logic: Email modifications restricted to staff
       if (user.is_staff) {
         payload.email = formData.email;
       }
 
-      // Update Profile Details
-      const response = await api.patch('/api/auth/me/', payload);
+      // Action: Update core identity
+      await api.patch('/api/auth/me/', payload);
       
-      // Update Donation Percentage if changed (and not for staff)
+      // Action: Update philanthropic commitment if applicable
       if (!user.is_staff && formData.donation_percentage !== user.donation_percentage) {
         await api.post('/api/charities/donation-pct/', { 
             percentage: formData.donation_percentage 
         });
       }
 
-      // Refresh User Context
+      // Identity Sync: Refresh global user context
       const updatedUserRes = await api.get('/api/auth/me/');
       setUser(updatedUserRes.data);
       
-      setStatus({ type: 'success', message: 'Profile updated successfully!' });
-    } catch (err) {
-      const errorMsg = err.response?.data ? Object.values(err.response.data).flat()[0] : 'Failed to update profile.';
-      setStatus({ type: 'error', message: errorMsg });
+      setStatus({ type: 'success', message: 'Identity Sync: Profile updated successfully.' });
+    } catch {
+      setStatus({ type: 'error', message: 'Transaction Alert: Failed to synchronize profile data.' });
     } finally {
       setLoading(false);
     }

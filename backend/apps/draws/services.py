@@ -7,27 +7,30 @@ from django.db.models import Count
 from decimal import Decimal
 
 class DrawService:
+    """
+    Handles the core business logic for the monthly prize draw, including 
+    winning number generation, prize calculation, and rollover management.
+    """
+
     @staticmethod
     def get_weighted_numbers():
         """
-        Calculates weights for numbers 1-45 based on global GolfScore frequency.
-        Returns 5 unique numbers.
+        Generates 5 unique winning numbers (1-45) using weighted probability 
+        based on the global frequency of golf scores submitted by platform users.
         """
-        # Count frequencies of scores (1-45)
+        # Aggregate global score frequencies to build a probability map
         frequencies = GolfScore.objects.values('score').annotate(count=Count('id')).order_by('score')
         freq_map = {f['score']: f['count'] for f in frequencies}
         
-        # Build probability list
         population = list(range(1, 46))
-        # Default weight of 1 to ensure all numbers have a chance
+        # Ensure all numbers have at least a baseline weight of 1
         weights = [freq_map.get(num, 0) + 1 for num in population]
         
-        # Sample 5 unique numbers
-        # random.choices with weights can return duplicates, so we sample manually or use a loop
         winning_numbers = []
         temp_pop = list(population)
         temp_weights = list(weights)
         
+        # Sample 5 unique numbers without replacement
         for _ in range(5):
             choice = random.choices(temp_pop, weights=temp_weights, k=1)[0]
             winning_numbers.append(choice)
@@ -40,14 +43,20 @@ class DrawService:
     @staticmethod
     @transaction.atomic
     def execute_draw(draw_id, dry_run=False, logic_type=None):
+        """
+        Orchestrates the draw execution process. 
+        - Generates winning numbers (Random or Weighted).
+        - Categorizes winners into Tiers 3, 4, and 5.
+        - Calculates and splits the prize pool.
+        - Handles jackpot rollovers and schedules the next month's round.
+        """
         draw = DrawRound.objects.get(id=draw_id)
         if draw.status != 'scheduled' and not dry_run:
             return {"error": "Draw is already executed or running."}
 
-        # Determine logic type
         effective_logic = logic_type or draw.logic_type
         
-        # 1. Pick 5 unique winning numbers
+        # 1. Determine Winning Numbers
         if effective_logic == 'weighted':
             winning_numbers = DrawService.get_weighted_numbers()
         else:
@@ -59,22 +68,17 @@ class DrawService:
             draw.winning_numbers = list(winning_numbers)
             draw.save()
 
-        # Tiers & Pool Partitioning (Phase 29: Requirement 07)
-        # Match 5: 40% (Rollover)
-        # Match 4: 35% (No Rollover)
-        # Match 3: 25% (No Rollover)
-        
+        # 2. Pool Partitioning (40% Tier 5 / 35% Tier 4 / 25% Tier 3)
         pool_total_raw = float(draw.total_pool)
         tier_5_pool = (pool_total_raw * 0.40) + float(draw.jackpot_amount)
         tier_4_pool = (pool_total_raw * 0.35)
         tier_3_pool = (pool_total_raw * 0.25)
 
-        # Pass 1: Categorize all winners to enable equal splitting
         tier_winners = {5: [], 4: [], 3: []}
-        
         all_entries = list(draw.entries.all())
         winning_nums = set(winning_numbers)
 
+        # Pass 1: Categorize entries by match count
         for entry in all_entries:
             entry_nums = set(entry.numbers)
             matches = len(entry_nums.intersection(winning_nums))
@@ -86,15 +90,14 @@ class DrawService:
             elif matches == 3:
                 tier_winners[3].append(entry)
 
-        # Pass 2: Calculate individual prizes and record winners
+        # Pass 2: Calculate individual payouts and record winners
         winners_data = []
         
-        # Helper to process a tier
         def process_tier(tier_num, tier_pool, winner_list):
             if not winner_list:
                 return 0
             
-            # Split pool equally among winners
+            # Prizes are split equally among all winners in the same tier
             individual_prize = round(tier_pool / len(winner_list), 2)
             
             for entry in winner_list:
@@ -123,21 +126,21 @@ class DrawService:
         t4_count = process_tier(4, tier_4_pool, tier_winners[4])
         t3_count = process_tier(3, tier_3_pool, tier_winners[3])
 
-        # Handle Lifecycle (Rollover & Next Month) - ONLY if not dry_run
+        # 3. Handle Lifecycle (Rollover & Next Month Scheduling)
         if not dry_run:
             import datetime
+            # Schedule next draw for the 1st of the following month
             next_date = draw.draw_date + datetime.timedelta(days=32)
             next_date = next_date.replace(day=1)
 
             if t5_count == 0:
                 draw.jackpot_rolled_over = True
-                # Rollover current 5-match pool (Jackpot + 40% share)
+                # Carry forward the Tier 5 pool if no winner
                 next_jackpot = tier_5_pool
             else:
-                # Fresh start with base jackpot if won
-                next_jackpot = 1000.00 # Standard Reset Amount
+                # Reset to baseline jackpot if won
+                next_jackpot = 1000.00
             
-            # Create next month's DrawRound
             DrawRound.objects.create(
                 draw_date=next_date,
                 status='scheduled',

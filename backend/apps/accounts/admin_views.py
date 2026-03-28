@@ -9,7 +9,8 @@ User = get_user_model()
 
 class AdminUserDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    Admin-only view to retrieve, update, or delete any user.
+    Administrative interface for granular user management.
+    Allows retrieval, modification, or removal of any user account by administrators.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -18,7 +19,8 @@ class AdminUserDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class AdminToggleUserStatusView(APIView):
     """
-    Toggle a user's is_active status.
+    Emergency Deactivation/Reactivation control for user accounts.
+    Toggles the 'is_active' flag to immediately restrict or grant platform access.
     """
     permission_classes = [permissions.IsAdminUser]
 
@@ -35,7 +37,8 @@ class AdminToggleUserStatusView(APIView):
 
 class AdminPasswordResetView(APIView):
     """
-    Force reset a user's password to a temporary one or a provided one.
+    Administrative Override for account security.
+    Allows designated administrators to manually force a password reset for a user.
     """
     permission_classes = [permissions.IsAdminUser]
 
@@ -44,8 +47,8 @@ class AdminPasswordResetView(APIView):
         new_password = request.data.get('password')
         
         if not new_password:
-            return Response({"error": "New password is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "New password is required for override."}, status=status.HTTP_400_BAD_REQUEST)
             
         user.set_password(new_password)
         user.save()
-        return Response({"status": "Password reset successfully."})
+        return Response({"status": "Administrative password reset completed successfully."})

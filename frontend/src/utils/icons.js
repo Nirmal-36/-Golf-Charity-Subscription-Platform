@@ -13,12 +13,16 @@ import {
 } from 'lucide-react';
 
 /**
- * Maps a charity category string to a Lucide icon component.
- * Provides a fallback if the category is unknown.
+ * Visual Taxonomy: getCategoryIcon
+ * Maps a philanthropic category string to a Lucide icon component.
+ * Ensures consistent iconography across the platform's visual language.
+ * @param {string} category - The raw category name from the backend.
+ * @returns {React.Component} The corresponding Lucide icon component.
  */
 export const getCategoryIcon = (category) => {
   const cat = category?.toLowerCase() || '';
   
+  // Logic: Dynamic fuzzy matching for category identification
   if (cat.includes('golf') || cat.includes('sport')) return Trophy;
   if (cat.includes('health') || cat.includes('medical') || cat.includes('doctor')) return Ambulance;
   if (cat.includes('environment') || cat.includes('nature') || cat.includes('green')) return Trees;
@@ -30,5 +34,6 @@ export const getCategoryIcon = (category) => {
   if (cat.includes('disaster') || cat.includes('aid') || cat.includes('humanitarian')) return Handshake;
   if (cat.includes('impact')) return TrendingUp;
   
-  return Heart; // Default fallback
+  // Fallback: Default to a generic impact icon (Heart)
+  return Heart;
 };

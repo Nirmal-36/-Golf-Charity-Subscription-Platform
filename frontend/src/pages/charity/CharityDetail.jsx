@@ -1,39 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { 
-  Heart, 
-  Calendar, 
-  MapPin, 
-  Users, 
-  ArrowLeft, 
-  ExternalLink, 
-  Zap,
-  Globe,
-  Share2,
-  Trophy,
-  ChevronRight
+  Heart, Globe, MapPin, CheckCircle, 
+  ArrowLeft, Share2, ShieldCheck, Loader2 
 } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 import api from '../../api/axios';
 import { resolveImageUrl } from '../../utils/image';
 import { getCategoryIcon } from '../../utils/icons';
-import { useAuth } from '../../hooks/useAuth';
 
+/**
+ * Partner Deep-Dive: CharityDetail
+ * A high-immersion view of a specific charitable partner.
+ * Orchestrates philanthropic transparency (about, impact, gallery) 
+ * and transactional engagement (one-time donations, membership onboarding).
+ */
 const CharityDetail = () => {
     const { slug } = useParams();
     const { user } = useAuth();
+    
+    // State: Partner intelligence & Donation orchestration
     const [charity, setCharity] = useState(null);
     const [loading, setLoading] = useState(true);
     const [donationAmount, setDonationAmount] = useState('25');
     const [isDonating, setIsDonating] = useState(false);
 
     useEffect(() => {
+        /**
+         * Infrastructure Sync: fetchCharity
+         * Retrieves the comprehensive partner profile including 
+         * impact metrics and visual assets.
+         */
         const fetchCharity = async () => {
             try {
                 const res = await api.get(`/api/charities/${slug}/`);
                 setCharity(res.data);
-            } catch (err) {
-                console.error("Failed to load charity", err);
+            } catch {
+                console.error("Infrastructure Alert: Partner profile inaccessible.");
             } finally {
                 setLoading(false);
             }
@@ -41,17 +44,25 @@ const CharityDetail = () => {
         fetchCharity();
     }, [slug]);
 
+    /**
+     * Transaction Handler: handleOneTimeDonation
+     * Initiates a secure Stripe Checkout session for independent 
+     * philanthropic contributions.
+     */
     const handleOneTimeDonation = async () => {
         setIsDonating(true);
         try {
-            const res = await api.post(`/api/charities/${slug}/donate/`, {
-                amount: donationAmount,
-                success_url: window.location.origin + '/donation/success',
-                cancel_url: window.location.href
+            const res = await api.get(`/api/charities/${slug}/donate/`, {
+                params: {
+                   amount: donationAmount,
+                   success_url: window.location.origin + '/donation/success',
+                   cancel_url: window.location.href
+                }
             });
+            // Gateway Transaction: Redirect to Stripe secure terminal
             window.location.href = res.data.checkout_url;
-        } catch (err) {
-            alert(err.response?.data?.error || "Donation failed to initialize.");
+        } catch {
+            alert("Transaction Alert: Could not initialize secure donation gateway.");
         } finally {
             setIsDonating(false);
         }

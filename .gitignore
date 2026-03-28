@@ -5,6 +5,7 @@ backend/venv/
 *$py.class
 backend/db.sqlite3
 backend/.env
+backend/*.log
 
 # Node / React
 frontend/node_modules/
@@ -16,10 +17,18 @@ frontend/.eslintcache
 
 # macOS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # IDEs
 .idea/
 .vscode/
+*.swp
+*.bak
 
 # Agent Workflows
 .agents/

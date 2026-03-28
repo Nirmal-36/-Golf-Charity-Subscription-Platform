@@ -8,92 +8,103 @@ from sendgrid.helpers.mail import Mail
 @shared_task
 def send_winner_notification(user_email, draw_id, tier, prize_amount):
     """
-    Sends an email to a lucky winner using SendGrid.
+    Winner Notification: High-impact announcement email.
+    Dispatched via SendGrid to notify winners of their match results 
+    and provide instructions for verification proof submission.
     """
     message = Mail(
         from_email=settings.DEFAULT_FROM_EMAIL,
         to_emails=user_email,
         subject=f'Congratulations! You won Tier {tier} in Draw #{draw_id}!',
         html_content=f'''
-            <h1>You're a Winner!</h1>
-            <p>Congratulations, you matched {tier} numbers in our monthly charity draw.</p>
-            <p><strong>Prize Amount: ${prize_amount}</strong></p>
-            <p>To claim your prize, please log in to the platform and upload a screenshot of your 
-               verified golf scorecards for the month in the "My Wins" section.</p>
-            <p>Cheers,<br>The Golf Charity Team</p>
+            <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
+                <h1 style="color: #059669;">You\'re a Winner!</h1>
+                <p>Congratulations, you matched <strong>{tier} numbers</strong> in our monthly charity draw.</p>
+                <div style="background-color: #f0fdf4; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center;">
+                    <p style="margin: 0; font-size: 18px; color: #166534;"><strong>Prize Amount: ${prize_amount}</strong></p>
+                </div>
+                <p>To claim your prize, please log in to the platform and upload a screenshot of your 
+                   verified golf scorecards for the month in the "My Wins" section.</p>
+                <p>Best regards,<br>The Golf Charity Team</p>
+            </div>
         '''
     )
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         sg.send(message)
-        return f"Email sent to {user_email}"
+        return f"Winner notification sent to {user_email}"
     except Exception as e:
-        return f"Error sending email: {str(e)}"
+        return f"SendGrid Error (Winner Notification): {str(e)}"
 
 @shared_task
 def send_admin_proof_notification(winner_email, draw_id):
     """
-    Notifies the admin that a winner has submitted proof.
+    Administrative Alert: Notifies staff of new verification submissions.
+    Ensures rapid turnaround for manual prize approval workflows.
     """
-    # Simply using Django's built-in send_mail if SENDGRID_API_KEY is missing, 
-    # but we'll stick to SendGrid for consistency if available.
     message = Mail(
         from_email=settings.DEFAULT_FROM_EMAIL,
         to_emails=settings.ADMIN_EMAIL,
-        subject=f'New Winner Proof Submitted: {winner_email}',
+        subject=f'Action Required: Winner Proof Submitted - {winner_email}',
         html_content=f'''
-            <p>Winner <strong>{winner_email}</strong> has uploaded proof for Draw #{draw_id}.</p>
-            <p>Please review it in the Admin Dashboard.</p>
+            <p><strong>{winner_email}</strong> has uploaded verification proof for Draw #{draw_id}.</p>
+            <p>Please review and verify the submission in the Admin Dashboard.</p>
         '''
     )
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         sg.send(message)
-    except:
+    except Exception:
         pass
+
 @shared_task
 def send_winner_approval_notification(user_email, draw_id, prize_amount):
     """
-    Notifies the winner that their proof has been approved and payment is pending.
+    Verification Success: Confirms manual approval of prize proof.
+    Signals the transition of the win record to the 'payout scheduled' state.
     """
     message = Mail(
         from_email=settings.DEFAULT_FROM_EMAIL,
         to_emails=user_email,
-        subject='Your Professional Prize Proof is Approved!',
+        subject='Verification Approved: Your Prize is on the Way!',
         html_content=f'''
-            <h1>Great News!</h1>
-            <p>Your golf scorecard proof for Draw #{draw_id} has been verified and approved.</p>
-            <p><strong>Prize Amount: ${prize_amount}</strong></p>
-            <p>Our team is now processing your payout. You will receive it within 3-5 business days.</p>
-            <p>Best regards,<br>The Golf Charity Team</p>
+            <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
+                <h1 style="color: #059669;">Great News!</h1>
+                <p>Your golf scorecard proof for Draw #{draw_id} has been verified and approved.</p>
+                <p><strong>Prize Amount: ${prize_amount}</strong></p>
+                <p>Our team is now processing your payout. You should receive it via your linked bank account within 3-5 business days.</p>
+                <p>Cheers,<br>The Golf Charity Team</p>
+            </div>
         '''
     )
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         sg.send(message)
-    except:
+    except Exception:
         pass
+
 @shared_task
 def send_welcome_email(user_email, plan_type):
     """
-    Sends a premium 'Welcome to the Club' email to new subscribers.
+    Member Onboarding: Formal welcome sequence for newly active subscribers.
+    Highlights platform benefits and encourages immediate community engagement.
     """
     plan_name = "Monthly" if plan_type == 'monthly' else "Yearly"
     message = Mail(
         from_email=settings.DEFAULT_FROM_EMAIL,
         to_emails=user_email,
-        subject='Welcome to the Club! Your Membership is Active ⛳️',
+        subject='Welcome to the Club! Your Membership is Active',
         html_content=f'''
             <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
                 <h1 style="color: #059669;">Welcome to the Club!</h1>
-                <p>We're thrilled to have you as an active member of the Golf Charity platform.</p>
-                <p>Your <strong>{plan_name} Membership</strong> is now active. You've officially unlocked:</p>
+                <p>We\'re thrilled to have you as an active member of the Eagle Golf Charity community.</p>
+                <p>Your <strong>{plan_name} Membership</strong> is now active. You\'ve unlocked:</p>
                 <ul>
-                    <li><strong>Rolling Score Tracking</strong>: Keep your handicap fresh and accurate.</li>
-                    <li><strong>Monthly Prize Draws</strong>: You're automatically in the running for this month's jackpot.</li>
-                    <li><strong>Charitable Impact</strong>: A portion of your fee is already heading towards your selected cause.</li>
+                    <li><strong>Rolling Score Tracking</strong>: Automated performance analytics.</li>
+                    <li><strong>Monthly Prize Draws</strong>: Automated entry for the current jackpot.</li>
+                    <li><strong>Charitable Impact</strong>: Transparent donation tracking to your chosen cause.</li>
                 </ul>
-                <p>Log in to your dashboard to see your impact and manage your round entries.</p>
+                <p>Log in to your dashboard to get started.</p>
                 <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
                     <p style="color: #666; font-size: 14px;">Happy Golfing,<br>The Golf Charity Team</p>
                 </div>
@@ -101,27 +112,28 @@ def send_welcome_email(user_email, plan_type):
         '''
     )
     try:
-        set_sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
-        set_sg.send(message)
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        sg.send(message)
         return f"Welcome email sent to {user_email}"
     except Exception as e:
-        return f"Error sending welcome email: {str(e)}"
+        return f"SendGrid Error (Welcome Email): {str(e)}"
 
 @shared_task
 def send_charity_welcome_email(user_email, org_name):
     """
-    Sends a welcome email to a newly registered charity organization.
+    Partner Onboarding: Confirmation of charity registration.
+    Sets expectations for the administrative vetting and approval lifecycle.
     """
     message = Mail(
         from_email=settings.DEFAULT_FROM_EMAIL,
         to_emails=user_email,
-        subject=f'Welcome to the Platform, {org_name}! ⛳️',
+        subject=f'Registration Confirmation: {org_name}',
         html_content=f'''
             <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
                 <h1 style="color: #059669;">Welcome, {org_name}!</h1>
-                <p>Thank you for registering your organization with the Golf Charity platform.</p>
-                <p>Your application is currently being reviewed by our administrative team. We'll verify your details and notify you as soon as your profile is approved for public donations.</p>
-                <p>In the meantime, you can log in to your <strong>Partner Hub</strong> to complete your profile and upload your organization's logo.</p>
+                <p>Thank you for initiating your partnership application with Eagle Golf Charity.</p>
+                <p>Your application is currently being reviewed by our vetting team. We will notify you electronically as soon as your profile is approved for public fundraising.</p>
+                <p>In the meantime, you can log in to your <strong>Partner Hub</strong> to optimize your organization\'s story and media assets.</p>
                 <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
                     <p style="color: #666; font-size: 14px;">Best regards,<br>The Golf Charity Team</p>
                 </div>
@@ -133,26 +145,26 @@ def send_charity_welcome_email(user_email, org_name):
         sg.send(message)
         return f"Charity welcome email sent to {user_email}"
     except Exception as e:
-        return f"Error sending charity welcome email: {str(e)}"
+        return f"SendGrid Error (Charity Welcome): {str(e)}"
 
 @shared_task
 def send_charity_approval_email(user_email, org_name):
     """
-    Sends an approval email when an organization is verified by admin.
+    Partner Activation: Notification of successful profile vetting.
+    Confirms visibility in the public charity directory and eligibility for donations.
     """
     message = Mail(
         from_email=settings.DEFAULT_FROM_EMAIL,
         to_emails=user_email,
-        subject=f'Congratulations! {org_name} is Now Approved! 🎉',
+        subject=f'Mission Approved: {org_name} is Now Live! 🎉',
         html_content=f'''
             <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
-                <h1 style="color: #059669;">Mission Approved!</h1>
-                <p>Great news! <strong>{org_name}</strong> has been officially verified and approved on our platform.</p>
-                <p>Your organization is now visible to our community of golfers, and you are eligible to receive monthly recurring donations.</p>
-                <p>Log in to your dashboard to track your incoming donations and manage your impact reports.</p>
+                <h1 style="color: #059669;">Application Approved!</h1>
+                <p>Great news! <strong>{org_name}</strong> has been officially verified and published on our platform.</p>
+                <p>Your organization is now visible to our community, and you are eligible to receive monthly recurring donations from our members.</p>
                 <div style="background-color: #f0fdf4; padding: 15px; border-radius: 10px; margin-top: 20px;">
-                    <p style="margin: 0; color: #166534; font-weight: bold;">Step 1: Complete your visual profile</p>
-                    <p style="margin: 5px 0 0 0; font-size: 14px; color: #166534;">Make sure you've uploaded your high-resolution logo for the best visibility.</p>
+                    <p style="margin: 0; color: #166534; font-weight: bold;">Tip: Complete your profile</p>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; color: #166534;">Ensure you have uploaded a high-resolution logo to maximize donor engagement.</p>
                 </div>
                 <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
                     <p style="color: #666; font-size: 14px;">Keep up the great work,<br>The Golf Charity Team</p>
@@ -165,25 +177,27 @@ def send_charity_approval_email(user_email, org_name):
         sg.send(message)
         return f"Charity approval email sent to {user_email}"
     except Exception as e:
-        return f"Error sending charity approval email: {str(e)}"
+        return f"SendGrid Error (Charity Approval): {str(e)}"
+
 @shared_task
 def send_otp_email(user_email, otp_code, purpose="password reset"):
     """
-    Sends a 6-digit OTP code for verification.
+    Security Protocol: Dispatcher for multi-factor verification codes.
+    Simple, high-visibility 6-digit code for account security and recovery.
     """
     message = Mail(
         from_email=settings.DEFAULT_FROM_EMAIL,
         to_emails=user_email,
-        subject=f'Your Verification Code: {otp_code} ⛳️',
+        subject=f'Verification Code: {otp_code}',
         html_content=f'''
             <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
-                <h1 style="color: #059669;">Verification Code</h1>
+                <h1 style="color: #059669;">Security Verification</h1>
                 <p>Hello,</p>
-                <p>You requested a code for <strong>{purpose}</strong>. Please use the 6-digit code below to continue:</p>
+                <p>You requested a code for <strong>{purpose}</strong>. Please use the verification code below:</p>
                 <div style="background-color: #f0fdf4; padding: 30px; border-radius: 20px; text-align: center; margin: 30px 0;">
                     <span style="font-size: 48px; font-weight: 900; letter-spacing: 12px; color: #166534;">{otp_code}</span>
                 </div>
-                <p style="color: #666; font-size: 14px;">This code will expire in 15 minutes. If you did not request this, please ignore this email.</p>
+                <p style="color: #666; font-size: 14px;">This code will expire in 15 minutes. If you did not request this, please secure your account.</p>
                 <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
                     <p style="color: #999; font-size: 12px;">The Golf Charity Team</p>
                 </div>
@@ -193,6 +207,6 @@ def send_otp_email(user_email, otp_code, purpose="password reset"):
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         sg.send(message)
-        return f"OTP sent to {user_email}"
+        return f"Security OTP sent to {user_email}"
     except Exception as e:
-        return f"Error sending OTP: {str(e)}"
+        return f"SendGrid Error (OTP Dispatch): {str(e)}"

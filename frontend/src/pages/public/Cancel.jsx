@@ -1,7 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { XCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
+/**
+ * Transaction Gateway: Cancel
+ * The fallback terminal for abandoned checkout sessions.
+ * Provides a clear path back to the subscription value proposition 
+ * without generating abandoned state alerts.
+ */
 const Cancel = () => {
   return (
     <div className="min-h-screen bg-brand-light flex items-center justify-center p-4">

@@ -1,5 +1,10 @@
-import React from 'react';
-
+/**
+ * Infrastructure: Static Content Generator
+ * Serves as the dynamic template for policy documents, transparency reports, 
+ * and platform documentation.
+ * @param {string} title - The header for the document.
+ * @param {string} description - The sub-text or summary of the content.
+ */
 const StaticPage = ({ title, description }) => {
   return (
     <div className="min-h-screen bg-brand-light pt-32 pb-20 px-4">
@@ -13,11 +18,11 @@ const StaticPage = ({ title, description }) => {
           </p>
           <div className="h-[2px] w-20 bg-brand-green/20 mb-10"></div>
           <p>
-            This page is currently being populated with our latest policies and and deep-dives into the platform's mechanics. 
-            At Golf Charity, we prioritize transparency and clarity for all our members.
+            This formal documentation is currently being finalized to incorporate our latest 
+            governance policies and philanthropic transparency benchmarks. 
           </p>
           <p className="mt-6">
-            If you have immediate questions regarding this topic, please reach out to our support team at 
+            For critical inquiries regarding this documentation or internal compliance, please contact:
             <span className="text-brand-green font-bold ml-1">support@golfcharity.com</span>.
           </p>
         </div>

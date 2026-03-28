@@ -4,7 +4,8 @@ from .serializers import CharitySerializer, AdminCharitySerializer
 
 class AdminCharityListCreateView(generics.ListCreateAPIView):
     """
-    Admin-only view to list or create charities.
+    Administrative Charity Ledger: Allows designated administrators to 
+    list, filter, and manually onboard new Charity Partners.
     """
     queryset = Charity.objects.all().order_by('name')
     serializer_class = AdminCharitySerializer
@@ -12,7 +13,9 @@ class AdminCharityListCreateView(generics.ListCreateAPIView):
 
 class AdminCharityDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    Admin-only view to retrieve, update, or delete any charity.
+    Vetting & Lifecycle Interface: Provides full administrative control 
+    over a specific charity profile.
+    Used for approval/deactivation workflows and granular metadata adjustments.
     """
     queryset = Charity.objects.all()
     serializer_class = AdminCharitySerializer

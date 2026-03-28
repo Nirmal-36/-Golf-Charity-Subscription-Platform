@@ -1,22 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../api/axios';
-import CharityCard from '../../components/CharityCard';
-import { motion } from 'framer-motion';
-import { Search, Compass, ChevronRight } from 'lucide-react';
+import { Search, Heart, Globe, ArrowRight, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import api from '../../api/axios';
 
+/**
+ * Philanthropy Discovery: ExploreCharities
+ * The public-facing partner directory. 
+ * Allows visitors to search and browse verified charitable partners 
+ * before committing to a membership.
+ */
 const ExploreCharities = () => {
   const [charities, setCharities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Lifecycle: Synchronize public partner registry
   useEffect(() => {
     const fetchCharities = async () => {
       try {
         const res = await api.get('/api/charities/');
         setCharities(res.data);
-      } catch (error) {
-        console.error("Failed to fetch charities", error);
+      } catch {
+        console.error("Infrastructure Alert: Discovery registry inaccessible.");
       } finally {
         setLoading(false);
       }

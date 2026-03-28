@@ -1,14 +1,20 @@
 import React, { useEffect } from 'react';
+import { History, Trophy, Clock, CheckCircle, Search, AlertCircle, Loader2 } from 'lucide-react';
 import { useDraw } from '../../hooks/useDraw';
-import { Link } from 'react-router-dom';
-import { Trophy, Calendar, CheckCircle2 } from 'lucide-react';
 
+/**
+ * Audit Trail: DrawHistory
+ * Provides a comprehensive ledger of past prize draw entries.
+ * Facilitates transparency for winnings (claim status: Paid, Approved, 
+ * Proof Submitted) and ensures historical result accessibility.
+ */
 const DrawHistory = () => {
   const { history, loading, error, fetchHistory } = useDraw();
 
+  // Lifecycle: Synchronize entry history on mount
   useEffect(() => {
     fetchHistory();
-  }, []);
+  }, [fetchHistory]);
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading history...</div>;
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;

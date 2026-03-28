@@ -1,23 +1,34 @@
 import React, { useEffect } from 'react';
+import { Search, Filter, Heart, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useCharities } from '../../hooks/useCharities';
 import { useAuth } from '../../hooks/useAuth';
-import CharityCard from '../../components/CharityCard';
-import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
 
+/**
+ * Philanthropy Hub: CharityBrowse
+ * Facilitates the exploration and selection of charitable partners.
+ * Integrated with the membership lifecycle to ensure consistent 
+ * contribution routing for subscribers.
+ */
 const CharityBrowse = () => {
   const { charities, loading, error, fetchCharities, selectCharity } = useCharities();
   const { user, checkUser } = useAuth();
 
+  // Lifecycle: Synchronize partner registry on mount
   useEffect(() => {
     fetchCharities();
   }, [fetchCharities]);
 
+  /**
+   * Selection Handler: handleSelectCharity
+   * Persists the user's philanthropic preference and synchronizes 
+   * the identity state to reflect the latest choice.
+   */
   const handleSelectCharity = async (charityId) => {
     const success = await selectCharity(charityId);
     if (success) {
-      await checkUser(); // Refresh user profile to get the newly selected charity name
+      // Identity Sync: Refresh profile to capture partner metadata
+      await checkUser(); 
     }
   };
 

@@ -13,7 +13,8 @@ User = get_user_model()
 
 class AdminStatsView(APIView):
     """
-    Returns platform-wide KPIs for the admin dashboard.
+    Calculates and returns real-time platform KPIs for the administrative dashboard.
+    Includes revenue projections, charity distribution, and draw participation stats.
     """
     permission_classes = [permissions.IsAdminUser]
 
@@ -24,23 +25,23 @@ class AdminStatsView(APIView):
         total_winners = DrawWinner.objects.count()
         pending_winners = DrawWinner.objects.filter(status='proof_submitted').count()
 
-        # Revenue calculation based on Phase 12 pricing ($9.99/mo, $99/yr)
+        # Monthly Projected Revenue ($9.99/mo, $99/yr @ 8.25/mo avg)
         monthly_revenue = (
             User.objects.filter(subscription_status='active', subscription_plan='monthly').count() * 9.99 +
-            User.objects.filter(subscription_status='active', subscription_plan='yearly').count() * 8.25 # $99 / 12
+            User.objects.filter(subscription_status='active', subscription_plan='yearly').count() * 8.25
         )
         
-        # 40% of revenue goes to Prize Pool
+        # Priority 1: Prize Pool Allocation (40% of standard monthly revenue)
         total_prize_pool = float(monthly_revenue) * 0.40
         total_paid = DrawWinner.objects.filter(status='paid').aggregate(Sum('prize_amount'))['prize_amount__sum'] or 0
         prize_pool_balance = max(0, total_prize_pool - float(total_paid))
 
-        # Analytics: Charity distribution (top 5)
+        # Top 5 Charities by popularity
         charity_stats = User.objects.exclude(selected_charity=None).values('selected_charity__name').annotate(
             count=Count('id')
         ).order_by('-count')[:5]
 
-        # Analytics: Recent draw participation (last 5 rounds)
+        # Draw participation trends (last 5 rounds)
         draw_stats = DrawRound.objects.filter(status='completed').annotate(
             total_entries=Count('entries')
         ).order_by('-draw_date').values('draw_date', 'total_entries')[:5]
@@ -69,13 +70,14 @@ class AdminPendingWinnersView(generics.ListAPIView):
 
 class AdminApproveWinnerView(APIView):
     """
-    Approve or reject a winner's proof and log the action.
+    Handles the manual verification workflow for winners.
+    Records changes in the Audit Log and triggers notification emails on approval.
     """
     permission_classes = [permissions.IsAdminUser]
 
     def post(self, request, winner_id):
         winner = get_object_or_404(DrawWinner, id=winner_id)
-        action = request.data.get('action') # 'approve' or 'reject'
+        action = request.data.get('action') # 'approve', 'reject', or 'mark_paid'
         notes = request.data.get('notes', '')
 
         if action == 'approve':
@@ -91,7 +93,7 @@ class AdminApproveWinnerView(APIView):
         winner.admin_notes = notes
         winner.save()
 
-        # Notify winner on approval
+        # Trigger Approval Notification
         if action == 'approve':
             try:
                 from apps.core.emails import send_winner_approval_notification
@@ -99,7 +101,7 @@ class AdminApproveWinnerView(APIView):
             except:
                 pass
 
-        # Record Audit Log
+        # Record Administrative Audit Entry
         AdminAuditLog.objects.create(
             admin=request.user,
             action=f"{action.capitalize()} Winner #{winner.id} ({winner.user.email})",
@@ -147,8 +149,8 @@ class AdminDrawDetailView(generics.RetrieveUpdateAPIView):
 
 class AdminManualDrawTriggerView(APIView):
     """
-    Manually trigger the draw execution for a specific round.
-    Supports is_dry_run (simulation) and custom logic_type.
+    Allows administrators to manually execute or simulate a draw round.
+    Includes logic and outcome logging in the Audit Trail.
     """
     permission_classes = [permissions.IsAdminUser]
  
@@ -158,7 +160,6 @@ class AdminManualDrawTriggerView(APIView):
         
         draw = get_object_or_404(DrawRound, pk=pk)
         
-        # Only allow re-runs if it's a dry-run or if it's scheduled
         if not is_dry_run and draw.status != 'scheduled':
             return Response({"error": "Only scheduled draws can be officially executed."}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -166,13 +167,12 @@ class AdminManualDrawTriggerView(APIView):
             from .services import DrawService
             results = DrawService.execute_draw(draw.id, dry_run=is_dry_run, logic_type=logic_type)
             
-            # Record Audit Log
             AdminAuditLog.objects.create(
                 admin=request.user,
                 action=f"{'Simulated' if is_dry_run else 'Manually Triggered'} Draw #{draw.id}",
                 resource_type="DrawRound",
                 resource_id=draw.id,
-                notes=f"Logic: {results.get('logic_type')}. Winners found: {len(results.get('winners', []))}"
+                notes=f"Logic: {results.get('logic_type')}. Winners: {len(results.get('winners', []))}"
             )
             
             return Response({
@@ -180,8 +180,6 @@ class AdminManualDrawTriggerView(APIView):
                 "results": results
             })
         except Exception as e:
-            import traceback
-            print(traceback.format_exc())
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AdminPublishDrawView(APIView):
@@ -232,33 +230,34 @@ class AdminPayWinnerView(APIView):
 
 class AdminOverdueDrawCheckView(APIView):
     """
-    Checks for and executes any overdue scheduled draws.
-    Useful for local dev where Celery Beat might not be running.
+    Diagnostic endpoint to manually force an overdue draw check.
+    Syncs the prize pool based on current live subscriber revenue before execution.
     """
     permission_classes = [permissions.IsAdminUser]
 
     def post(self, request):
         from .tasks import execute_monthly_draw
         
-        # Phase 29 Enhancement: Sync total_pool from live subscriber data
-        # This ensures Match 3/4 pools are populated based on 40% of current active revenue
+        # Priority: Sync the total_pool from live subscriber data before execution.
+        # This ensures Match 3/4 pools are accurately populated based on 40% of current revenue.
         draw = DrawRound.objects.filter(status='scheduled').order_by('draw_date').first()
+        pool_calculation = 0
+        
         if draw:
             active_users = User.objects.filter(is_active=True, subscription_status='active')
             monthly_revenue = (
                 active_users.filter(subscription_plan='monthly').count() * 9.99 +
-                active_users.filter(subscription_plan='yearly').count() * 8.25 # $99 / 12
+                active_users.filter(subscription_plan='yearly').count() * 8.25
             )
-            # Allocation is 40% of revenue
             pool_calculation = float(monthly_revenue) * 0.40
             draw.total_pool = pool_calculation
             draw.save()
 
-        result = execute_monthly_draw() # Still checks for overdue draws
+        result = execute_monthly_draw()
         return Response({
             "status": "Check completed", 
             "result": result,
-            "synced_pool": pool_calculation if draw else 0
+            "synced_pool": pool_calculation
         })
 
 class AdminDrawHistoryView(generics.ListAPIView):

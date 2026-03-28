@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Lock, Mail, Key, ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
 import api from '../../api/axios';
-import { motion } from 'framer-motion';
-import { KeyRound, ShieldCheck, Lock, ArrowRight, ArrowLeft } from 'lucide-react';
 
+/**
+ * Security: ResetPassword
+ * Finalizes the secure account recovery process. 
+ * Orchestrates verification code validation and credential updates.
+ */
 const ResetPassword = () => {
     const [formData, setFormData] = useState({
         otp: '',
@@ -16,9 +20,11 @@ const ResetPassword = () => {
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
+    // Lifecycle: Context Validation
     useEffect(() => {
         const storedEmail = sessionStorage.getItem('reset_email');
         if (!storedEmail) {
+            // Security Protocol: Redirect if no recovery context exists
             navigate('/forgot-password');
         } else {
             setEmail(storedEmail);
@@ -29,10 +35,15 @@ const ResetPassword = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    /**
+     * Transaction Handler: handleSubmit
+     * Verifies the recovery code and updates the user's secure credentials.
+     * Implements strict password matching and robust error reporting.
+     */
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (formData.new_password !== formData.confirm_password) {
-            return setError('Passwords do not match.');
+            return setError('Security Alert: Password confirmation mismatch.');
         }
         
         setLoading(true);
@@ -45,11 +56,13 @@ const ResetPassword = () => {
                 otp: formData.otp,
                 new_password: formData.new_password
             });
-            setMessage('Password reset successfully! Redirecting to login...');
+            setMessage('Credentials Updated: Redirecting to secure login...');
+            
+            // Security: Purge recovery context
             sessionStorage.removeItem('reset_email');
             setTimeout(() => navigate('/login'), 2000);
         } catch (err) {
-            setError(err.response?.data?.detail || 'Reset failed. Please verify the code and try again.');
+            setError(err.response?.data?.detail || 'Verification Alert: Code validation failed.');
         } finally {
             setLoading(false);
         }

@@ -1,18 +1,29 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+// import motion if needed
+import { 
+  Heart, Target, Trophy, ArrowRight, CheckCircle, 
+  ShieldCheck, Calculator, Coins, Zap 
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Trophy, Heart, Target, ChevronRight, CheckCircle2, ShieldCheck, Zap, Coins, Calculator, History } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { getCategoryIcon } from '../../utils/icons';
 import { resolveImageUrl } from '../../utils/image';
+import { getCategoryIcon } from '../../utils/icons';
 
+/**
+ * Marketing Core: LandingPage
+ * The primary entry point for public visitors. 
+ * High-impact, emotion-driven interface focusing on charitable impact, 
+ * monthly prize mechanics, and community membership onboarding.
+ */
 const LandingPage = () => {
   const { user } = useAuth();
+  
+  // Animation Suite: Motion tokens for orchestrated section entry
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
   };
-// ... rest of variants ...
+
   const itemVariants = {
     hidden: { y: 30, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: 'easeOut' } }
