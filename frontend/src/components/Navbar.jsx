@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-// import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Menu, X, Trophy, UserCircle, LogOut, User, LayoutDashboard, Compass, CreditCard, Heart, Target, Shield } from 'lucide-react';
 import SubscriptionBadge from './SubscriptionBadge';
 
@@ -256,18 +256,15 @@ const Navbar = () => {
   );
 };
 
-const DropdownLink = ({ to, icon, label, onClick }) => {
-  const Icon = icon;
-  return (
-    <Link 
-      to={to} 
-      onClick={onClick}
-      className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:text-brand-green hover:bg-brand-green/5 rounded-xl transition-all group"
-    >
-      <Icon size={18} className="text-gray-400 group-hover:text-brand-green transition-colors" />
-      {label}
-    </Link>
-  );
-};
+const DropdownLink = ({ to, icon: Icon, label, onClick }) => (
+  <Link 
+    to={to} 
+    onClick={onClick}
+    className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:text-brand-green hover:bg-brand-green/5 rounded-xl transition-all group"
+  >
+    <Icon size={18} className="text-gray-400 group-hover:text-brand-green transition-colors" />
+    {label}
+  </Link>
+);
 
 export default Navbar;

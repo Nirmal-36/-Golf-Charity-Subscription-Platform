@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Navigate, Link } from 'react-router-dom';
 import { 
-  CreditCard, Calendar, Heart, Shield, 
-  ExternalLink, AlertTriangle, CheckCircle, Loader2 
+  Award, 
+  Calendar, 
+  CreditCard, 
+  ArrowRight, 
+  ShieldCheck, 
+  Loader2, 
+  Heart 
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import SubscriptionBadge from '../../components/SubscriptionBadge';
 import api from '../../api/axios';
-import { Navigate } from 'react-router-dom';
 
 /**
  * Management Terminal: SubscriptionDetails
@@ -15,7 +22,11 @@ import { Navigate } from 'react-router-dom';
  */
 const SubscriptionDetails = () => {
   const { user, setUser } = useAuth();
-  // const navigate = useNavigate();
+  
+  // Security: Redirection for administrative identities
+  if (user?.is_staff) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
   
   // State: Transactional metadata & billing intelligence
   const [loading, setLoading] = useState(false);
@@ -29,17 +40,12 @@ const SubscriptionDetails = () => {
   const [saved, setSaved] = useState(false);
 
   // Lifecycle: Synchronize billing history and local slider state
-  useEffect(() => {
+  React.useEffect(() => {
     fetchHistory();
     if (user?.donation_percentage) {
       setTempPercentage(user.donation_percentage);
     }
   }, [user?.donation_percentage]);
-
-  // Security: Redirection for administrative identities (Moved after all hooks)
-  if (user?.is_staff) {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
 
   /**
    * Infrastructure Sync: fetchHistory
@@ -50,7 +56,7 @@ const SubscriptionDetails = () => {
     try {
       const { data } = await api.get('/api/subscriptions/history/');
       setInvoices(data.invoices || []);
-    } catch {
+    } catch (err) {
       console.error('Infrastructure Alert: Billing history inaccessible.');
     } finally {
       setHistoryLoading(false);
@@ -71,7 +77,7 @@ const SubscriptionDetails = () => {
       setUser({ ...user, donation_percentage: val });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch {
+    } catch (err) {
       console.error('Transaction Alert: Commitment synchronization failed.');
     } finally {
       setIsSaving(false);
@@ -91,7 +97,7 @@ const SubscriptionDetails = () => {
       });
       // Security: Hand-off to the encrypted Stripe portal
       window.location.href = data.portal_url;
-    } catch {
+    } catch (err) {
       setError('Transaction Alert: Secure billing portal initialization failed.');
       setLoading(false);
     }

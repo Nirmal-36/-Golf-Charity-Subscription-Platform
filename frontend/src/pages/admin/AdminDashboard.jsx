@@ -186,35 +186,29 @@ const AdminDashboard = () => {
   );
 };
 
-const StatCard = ({ icon, label, value, color, bg }) => {
-  const Icon = icon;
-  return (
-    <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-xl shadow-brand-green/5 flex items-center gap-4 hover:-translate-y-1 transition-all duration-300">
-      <div className={`p-3 rounded-2xl ${bg} ${color}`}>
-        <Icon size={24} />
-      </div>
-      <div>
-        <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{label}</div>
-        <div className={`text-2xl font-black ${color}`}>{value}</div>
-      </div>
+const StatCard = ({ icon: Icon, label, value, color, bg }) => (
+  <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-xl shadow-brand-green/5 flex items-center gap-4 hover:-translate-y-1 transition-all duration-300">
+    <div className={`p-3 rounded-2xl ${bg} ${color}`}>
+      <Icon size={24} />
     </div>
-  );
-};
+    <div>
+      <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{label}</div>
+      <div className={`text-2xl font-black ${color}`}>{value}</div>
+    </div>
+  </div>
+);
 
-const AdminLink = ({ icon, label, count, to }) => {
-  const Icon = icon;
-  return (
-    <Link 
-      to={to}
-      className="flex items-center justify-between p-4 rounded-2xl hover:bg-brand-green/5 transition-all duration-200 cursor-pointer group"
-    >
-      <div className="flex items-center gap-3">
-        <Icon size={18} className="text-gray-400 group-hover:text-brand-green transition-colors" />
-        <span className="font-bold text-gray-600 group-hover:text-brand-green transition-colors">{label}</span>
-      </div>
-      {count !== null && <span className="text-[10px] font-black bg-gray-100 text-gray-400 px-2 py-0.5 rounded-lg group-hover:bg-brand-green group-hover:text-white transition-all">{count}</span>}
-    </Link>
-  );
-};
+const AdminLink = ({ icon: Icon, label, count, to }) => (
+  <Link 
+    to={to}
+    className="flex items-center justify-between p-4 rounded-2xl hover:bg-brand-green/5 transition-all duration-200 cursor-pointer group"
+  >
+    <div className="flex items-center gap-3">
+      <Icon size={18} className="text-gray-400 group-hover:text-brand-green transition-colors" />
+      <span className="font-bold text-gray-600 group-hover:text-brand-green transition-colors">{label}</span>
+    </div>
+    {count !== null && <span className="text-[10px] font-black bg-gray-100 text-gray-400 px-2 py-0.5 rounded-lg group-hover:bg-brand-green group-hover:text-white transition-all">{count}</span>}
+  </Link>
+);
 
 export default AdminDashboard;

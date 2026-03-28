@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-// import { motion } from 'framer-motion';
-import { Trophy, Target, Clock, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Trophy, Clock, Target, AlertCircle } from 'lucide-react';
 import { useDraw } from '../../hooks/useDraw';
+import NumberPicker from '../../components/NumberPicker';
 
 /**
  * Gamification Hub: Draw
@@ -16,12 +18,12 @@ const Draw = () => {
   const [selectedNumbers, setSelectedNumbers] = useState([]);
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const timeLeft = 'TBA';
+  const [timeLeft, setTimeLeft] = useState('');
 
   // Lifecycle: Synchronize active draw parameters on mount
   useEffect(() => {
     fetchCurrentDraw();
-  }, [fetchCurrentDraw]);
+  }, []);
 
   /**
    * UI Interaction: toggleNumber

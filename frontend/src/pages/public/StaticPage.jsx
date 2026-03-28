@@ -1,3 +1,5 @@
+import React from 'react';
+
 /**
  * Infrastructure: Static Content Generator
  * Serves as the dynamic template for policy documents, transparency reports, 

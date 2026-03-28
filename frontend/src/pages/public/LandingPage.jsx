@@ -1,10 +1,18 @@
 import React from 'react';
-// import motion if needed
-import { 
-  Heart, Target, Trophy, ArrowRight, CheckCircle, 
-  ShieldCheck, Calculator, Coins, Zap 
-} from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { 
+  Zap, 
+  ChevronRight, 
+  Heart, 
+  Target, 
+  Trophy, 
+  History, 
+  Calculator, 
+  Coins, 
+  CheckCircle2, 
+  ShieldCheck 
+} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { resolveImageUrl } from '../../utils/image';
 import { getCategoryIcon } from '../../utils/icons';

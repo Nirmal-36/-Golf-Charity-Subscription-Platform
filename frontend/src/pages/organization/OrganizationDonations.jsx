@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-// import { motion } from 'framer-motion';
-import { DollarSign, Calendar, Search, ArrowDownCircle, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Download, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import api from '../../api/axios';
+import CustomSelect from '../../components/ui/CustomSelect';
 
 /**
  * Philanthropic Ledger: OrganizationDonations
@@ -30,7 +32,7 @@ const OrganizationDonations = () => {
     try {
       const { data } = await api.get('/api/charities/donations/');
       setDonations(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (err) {
       console.error('Infrastructure Alert: Donation ledger inaccessible.');
       setDonations([]);
     } finally {

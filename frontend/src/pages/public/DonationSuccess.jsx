@@ -1,7 +1,13 @@
 import React from 'react';
-// import motion if needed
-import { Heart, Share2, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { 
+  Heart, 
+  Trophy, 
+  ChevronRight, 
+  Share2, 
+  Globe 
+} from 'lucide-react';
 
 /**
  * Transaction Gateway: DonationSuccess

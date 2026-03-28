@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
-import { Search, Filter, Heart, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useCharities } from '../../hooks/useCharities';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useCharities } from '../../hooks/useCharities';
+import CharityCard from '../../components/CharityCard';
 
 /**
  * Philanthropy Hub: CharityBrowse

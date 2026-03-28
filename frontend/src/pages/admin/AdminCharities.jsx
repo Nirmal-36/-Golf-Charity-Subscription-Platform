@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { Link } from 'react-router-dom';
 import { Heart, Plus, Edit, Trash2, ArrowLeft, Globe, Tag, ExternalLink } from 'lucide-react';
-// import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import CustomSelect from '../../components/ui/CustomSelect';
 import { CHARITY_CATEGORIES } from '../../utils/constants';
 import CustomModal from '../../components/ui/CustomModal';
@@ -48,7 +48,7 @@ const AdminCharities = () => {
         is_active: true
       });
       fetchCharities();
-    } catch {
+    } catch (err) {
       alert("Failed to approve charity.");
     }
   };
@@ -57,7 +57,7 @@ const AdminCharities = () => {
     try {
       await api.patch(`/api/charities/admin/${charity.id}/`, { is_active: !charity.is_active });
       fetchCharities();
-    } catch {
+    } catch (err) {
       alert("Failed to update status.");
     }
   };
@@ -67,7 +67,7 @@ const AdminCharities = () => {
     try {
       await api.delete(`/api/charities/admin/${charityToDelete}/`);
       fetchCharities();
-    } catch {
+    } catch (err) {
       alert("Failed to delete charity.");
     }
   };
@@ -113,8 +113,8 @@ const AdminCharities = () => {
       setLogoFile(null);
       setLogoPreview(null);
       fetchCharities();
-    } catch (error) {
-      alert('Failed to save charity. ' + (error.response?.data?.slug?.[0] || ''));
+    } catch (err) {
+      alert('Failed to save charity. ' + (err.response?.data?.slug?.[0] || ''));
     }
   };
 
@@ -150,14 +150,14 @@ const AdminCharities = () => {
             className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === 'all' ? 'text-brand-green' : 'text-gray-400 hover:text-brand-dark'}`}
           >
             All Charities ({charities.filter(c => c.is_approved).length})
-            {activeTab === 'all' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-brand-green rounded-full" />}
+            {activeTab === 'all' && <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-1 bg-brand-green rounded-full" />}
           </button>
           <button 
             onClick={() => setActiveTab('pending')}
             className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === 'pending' ? 'text-brand-green' : 'text-gray-400 hover:text-brand-dark'}`}
           >
             Organization Requests ({charities.filter(c => !c.is_approved).length})
-            {activeTab === 'pending' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-brand-green rounded-full" />}
+            {activeTab === 'pending' && <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-1 bg-brand-green rounded-full" />}
           </button>
         </div>
 
@@ -223,10 +223,11 @@ const AdminCharities = () => {
                           onClick={() => handleToggleStatus(charity)}
                           className={`relative w-12 h-6 rounded-full transition-colors duration-200 outline-none ${charity.is_active ? 'bg-brand-green' : 'bg-gray-200'}`}
                         >
-                            <div 
-                              style={{ transform: `translateX(${charity.is_active ? '28px' : '4px'})` }}
-                              className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
-                            />
+                          <motion.div 
+                            animate={{ x: charity.is_active ? 28 : 4 }}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                            className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                          />
                         </button>
                      </div>
                    ) : (

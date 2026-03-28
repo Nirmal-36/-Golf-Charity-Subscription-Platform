@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, ArrowLeft, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ShieldCheck, Mail, ArrowRight, ArrowLeft } from 'lucide-react';
 import api from '../../api/axios';
 
 /**

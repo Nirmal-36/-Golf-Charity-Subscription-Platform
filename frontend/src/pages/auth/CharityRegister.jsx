@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import api from '../../api/axios';
 import { Link } from 'react-router-dom';
 import { Heart, Send, CheckCircle, ArrowRight, Shield, Globe, Award, ChevronDown } from 'lucide-react';
-// import motion if needed later
+import { motion } from 'framer-motion';
 import { CHARITY_CATEGORIES } from '../../utils/constants';
 import CustomSelect from '../../components/ui/CustomSelect';
+import { resolveImageUrl } from '../../utils/image';
 
 const CharityRegister = () => {
   const [formData, setFormData] = useState({

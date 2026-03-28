@@ -13,7 +13,7 @@ export const useCharities = () => {
       const { data } = await api.get(url);
       setCharities(data);
       setError(null);
-    } catch {
+    } catch (err) {
       setError('Failed to load charities');
     } finally {
       setLoading(false);
@@ -24,7 +24,7 @@ export const useCharities = () => {
     try {
       await api.post('/api/charities/select/', { charity_id: charityId });
       return true;
-    } catch {
+    } catch (err) {
       setError('Failed to select charity');
       return false;
     }

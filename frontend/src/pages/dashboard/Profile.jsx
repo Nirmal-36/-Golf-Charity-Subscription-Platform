@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
-// import motion if needed
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { 
-  User as UserIcon, Mail, Phone, MapPin, 
-  Settings, Save, CheckCircle, Heart, Loader2 
+  UserCircle, 
+  User, 
+  Mail, 
+  Heart, 
+  ShieldCheck, 
+  KeyRound, 
+  CheckCircle2, 
+  AlertCircle, 
+  Save, 
+  Loader2 
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../api/axios';
@@ -139,7 +148,7 @@ const Profile = () => {
       setUser(updatedUserRes.data);
       
       setStatus({ type: 'success', message: 'Identity Sync: Profile updated successfully.' });
-    } catch {
+    } catch (err) {
       setStatus({ type: 'error', message: 'Transaction Alert: Failed to synchronize profile data.' });
     } finally {
       setLoading(false);

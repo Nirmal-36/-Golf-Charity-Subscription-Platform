@@ -1,5 +1,5 @@
 import React from 'react';
-// import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertCircle, HelpCircle } from 'lucide-react';
 
 const CustomModal = ({ 

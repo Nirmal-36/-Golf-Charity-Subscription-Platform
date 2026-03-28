@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Mail, Key, ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { KeyRound, ShieldCheck, Lock, ArrowRight, ArrowLeft } from 'lucide-react';
 import api from '../../api/axios';
 
 /**

@@ -1,13 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { 
-  Building2, Mail, Globe, MapPin, 
-  Camera, Save, CheckCircle2, Loader2, Trash2 
+  Camera, 
+  Trash2, 
+  Save, 
+  CheckCircle2, 
+  Loader2, 
+  ArrowLeft 
 } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
+import { Link } from 'react-router-dom';
 import api from '../../api/axios';
+import { useAuth } from '../../hooks/useAuth';
 import { resolveImageUrl } from '../../utils/image';
 import { getCategoryIcon } from '../../utils/icons';
-import { CHARITY_CATEGORIES } from '../../utils/constants';
+import CustomSelect from '../../components/ui/CustomSelect';
+
+const CHARITY_CATEGORIES = [
+  { value: 'Health', label: 'Health & Wellness' },
+  { value: 'Education', label: 'Education' },
+  { value: 'Environment', label: 'Environment' },
+  { value: 'Junior Golf', label: 'Junior Golf Development' },
+  { value: 'Disability', label: 'Disability Support' },
+  { value: 'Community', label: 'Community Outreach' }
+];
 
 /**
  * Branding Terminal: OrganizationProfile
@@ -60,7 +75,7 @@ const OrganizationProfile = () => {
       } else if (data.logo_url) {
         setPreviewUrl(resolveImageUrl(data.logo_url));
       }
-    } catch {
+    } catch (err) {
       console.error('Infrastructure Alert: Organizational data inaccessible.');
     } finally {
       setLoading(false);
@@ -126,28 +141,8 @@ const OrganizationProfile = () => {
       setSaved(true);
       setLogoFile(null);
       setTimeout(() => setSaved(false), 3000);
-    } catch {
+    } catch (err) {
       console.error('Transaction Alert: Protocol rejection during profile update.');
-    } finally {
-      setSaveLoading(false);
-    }
-  };
-
-  /**
-   * Infrastructure Sync: handleRemoveLogo
-   * Signal the orchestrator to purge the organizational visual identity.
-   */
-  const handleRemoveLogo = async () => {
-    try {
-      setSaveLoading(true);
-      await api.delete('/api/charities/my-profile/remove-logo/');
-      setCharity(prev => ({ ...prev, logo_image: null, logo_url: null }));
-      setPreviewUrl(null);
-      setLogoFile(null);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch {
-      console.error('Infrastructure Alert: Logo removal rejected.');
     } finally {
       setSaveLoading(false);
     }

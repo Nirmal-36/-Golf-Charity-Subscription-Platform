@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Mail, Lock, UserPlus, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../api/axios';
 
@@ -38,7 +37,7 @@ const Register = () => {
       try {
         const res = await api.get('/api/charities/');
         setCharities(res.data);
-      } catch {
+      } catch (err) {
         console.error("UX Notification: Partner synchronization failed.");
       } finally {
         setLoadingCharities(false);

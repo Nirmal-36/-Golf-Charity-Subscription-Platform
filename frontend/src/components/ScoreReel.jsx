@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import ScoreCard from './ScoreCard';
 import { useScores } from '../hooks/useScores';
-// import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ScoreReel = () => {
   const { scores, loading, error, fetchActiveScores } = useScores();

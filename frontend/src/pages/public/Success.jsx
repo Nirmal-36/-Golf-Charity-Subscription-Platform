@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { CheckCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { CheckCircle, Trophy, Home } from 'lucide-react';
 
 /**
  * Transaction Gateway: Success
@@ -12,6 +12,7 @@ import { CheckCircle, Trophy, Home } from 'lucide-react';
  */
 const Success = () => {
   const { checkUser } = useAuth();
+  const navigate = useNavigate();
 
   // Lifecycle: Post-transaction identity synchronization
   useEffect(() => {

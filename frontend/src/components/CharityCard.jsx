@@ -1,5 +1,5 @@
 import React from 'react';
-// import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { CheckCircle2, ChevronRight } from 'lucide-react';
 import { resolveImageUrl } from '../utils/image';
 import { getCategoryIcon } from '../utils/icons';
@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 const CharityCard = ({ charity, onSelect, isSelected }) => {
   const isSelectionMode = !!onSelect;
 
-  return (
+  const CardWrapper = ({ children }) => (
     <motion.div 
       whileHover={{ scale: 1.02 }}
       className={`relative bg-white rounded-xl shadow overflow-hidden transition-all border-2 flex flex-col h-full ${
@@ -16,6 +16,12 @@ const CharityCard = ({ charity, onSelect, isSelected }) => {
       } ${isSelectionMode ? 'cursor-pointer' : ''}`}
       onClick={() => isSelectionMode && onSelect(charity.id)}
     >
+      {children}
+    </motion.div>
+  );
+
+  return (
+    <CardWrapper>
       {isSelected && (
         <div className="absolute top-2 right-2 text-brand-green z-10">
           <CheckCircle2 size={24} className="fill-white" />
@@ -75,7 +81,7 @@ const CharityCard = ({ charity, onSelect, isSelected }) => {
           )}
         </div>
       </div>
-    </motion.div>
+    </CardWrapper>
   );
 };
 

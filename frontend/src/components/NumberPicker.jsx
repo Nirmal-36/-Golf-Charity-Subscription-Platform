@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
-const MotionButton = motion.button;
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const NumberPicker = ({ selectedNumbers, onToggle }) => {
   return (
@@ -7,7 +7,7 @@ const NumberPicker = ({ selectedNumbers, onToggle }) => {
       {Array.from({ length: 45 }, (_, i) => i + 1).map((num) => {
         const isSelected = selectedNumbers.includes(num);
         return (
-          <MotionButton
+          <motion.button
             key={num}
             type="button"
             whileHover={{ scale: 1.1 }}
@@ -20,7 +20,7 @@ const NumberPicker = ({ selectedNumbers, onToggle }) => {
             }`}
           >
             {num}
-          </MotionButton>
+          </motion.button>
         );
       })}
     </div>

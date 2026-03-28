@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  Trophy, Target, Heart, TrendingUp, 
-  Clock, ArrowRight, CheckCircle, Shield 
-} from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Link, Navigate } from 'react-router-dom';
+import { Trophy, ArrowRight, Heart } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import ScoreReel from '../../components/ScoreReel';
+import SubscriptionBadge from '../../components/SubscriptionBadge';
 import { resolveImageUrl } from '../../utils/image';
 import { getCategoryIcon } from '../../utils/icons';
 
@@ -15,7 +15,7 @@ import { getCategoryIcon } from '../../utils/icons';
  * and philanthropic impact visualization.
  */
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   // Security: Role-based redirection for administrative staff
   if (user?.is_staff) {

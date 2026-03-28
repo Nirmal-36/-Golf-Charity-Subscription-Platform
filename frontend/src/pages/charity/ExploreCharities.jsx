@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Heart, Globe, ArrowRight, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { Compass, Search, ChevronRight } from 'lucide-react';
 import api from '../../api/axios';
+import CharityCard from '../../components/CharityCard';
 
 /**
  * Philanthropy Discovery: ExploreCharities
@@ -20,7 +22,7 @@ const ExploreCharities = () => {
       try {
         const res = await api.get('/api/charities/');
         setCharities(res.data);
-      } catch {
+      } catch (error) {
         console.error("Infrastructure Alert: Discovery registry inaccessible.");
       } finally {
         setLoading(false);

@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-// import motion if needed
-import { 
-  Check, Shield, Zap, ArrowRight, Loader2, 
-  Trophy, Heart, Target 
-} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Navigate, Link } from 'react-router-dom';
+import { Trophy, Heart, Target, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../api/axios';
 
@@ -47,7 +45,7 @@ const Subscription = () => {
       });
       // Gateway Transaction: Hand-off to encrypted Stripe terminal
       window.location.href = data.checkout_url;
-    } catch {
+    } catch (err) {
       setError('Transaction Alert: Failed to initialize secure checkout protocol.');
       setLoading(false);
     }

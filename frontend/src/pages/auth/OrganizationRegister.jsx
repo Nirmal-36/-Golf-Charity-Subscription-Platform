@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Building2, Mail, Lock, User, 
-  ArrowRight, CheckCircle, Loader2 
+  Heart, 
+  User, 
+  Globe, 
+  ArrowRight, 
+  ArrowLeft, 
+  CheckCircle2 
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { CHARITY_CATEGORIES } from '../../utils/constants';
@@ -32,7 +37,7 @@ const OrganizationRegister = () => {
   
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

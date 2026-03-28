@@ -1,9 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-// import motion if needed
-import { Target, Calendar, Award, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
-import api from '../../api/axios';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Trophy, ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import { useScores } from '../../hooks/useScores';
+import api from '../../api/axios';
+
+/**
+ * UI Component: CustomDatePicker
+ * Standardized date selection for the score submission form.
+ */
+const CustomDatePicker = ({ label, value, onChange, required }) => (
+  <div>
+    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">{label}</label>
+    <input 
+      type="date" 
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      required={required}
+      className="w-full bg-brand-light/30 border-2 border-gray-100 focus:border-brand-green focus:bg-white rounded-3xl p-4 font-bold outline-none transition"
+    />
+  </div>
+);
 
 /**
  * Member Transaction: ScoreSubmit
@@ -36,7 +53,7 @@ const ScoreSubmit = () => {
           if (response.data.played_at) {
             setPlayedAt(response.data.played_at);
           }
-        } catch {
+        } catch (err) {
           setError('Infrastructure Alert: Score data inaccessible.');
         } finally {
           setFetching(false);

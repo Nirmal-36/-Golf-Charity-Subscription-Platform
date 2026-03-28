@@ -1,6 +1,14 @@
 import React from 'react';
-import { Heart, ShieldCheck, Zap, ArrowRight, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { 
+  Trophy, 
+  Check, 
+  ArrowRight, 
+  Heart, 
+  ShieldCheck, 
+  Zap 
+} from 'lucide-react';
 
 /**
  * Value Proposition: Membership Page

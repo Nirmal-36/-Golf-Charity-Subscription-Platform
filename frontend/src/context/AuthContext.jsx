@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../api/axios';
-export { AuthContext } from './AuthContextType';
-import { AuthContext } from './AuthContextType';
+
+/**
+ * Identity & Access Management: AuthContext
+ * Centralized state orchestrator for user authentication, persistent 
+ * session hydration, and role-based security throughout the platform.
+ */
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -18,7 +23,7 @@ export const AuthProvider = ({ children }) => {
         const res = await api.get('/api/auth/me/');
         setUser(res.data);
       }
-    } catch {
+    } catch (error) {
       console.error("Auth Notification: Session restoration failed or expired.");
       setUser(null);
     } finally {

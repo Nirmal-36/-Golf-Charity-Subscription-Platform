@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { 
-  Heart, Globe, MapPin, CheckCircle, 
-  ArrowLeft, Share2, ShieldCheck, Loader2 
+  Heart, 
+  ArrowLeft, 
+  Users, 
+  Trophy, 
+  Calendar, 
+  MapPin, 
+  ExternalLink, 
+  Zap, 
+  ChevronRight, 
+  Globe, 
+  Share2 
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../api/axios';
@@ -35,7 +45,7 @@ const CharityDetail = () => {
             try {
                 const res = await api.get(`/api/charities/${slug}/`);
                 setCharity(res.data);
-            } catch {
+            } catch (err) {
                 console.error("Infrastructure Alert: Partner profile inaccessible.");
             } finally {
                 setLoading(false);
@@ -61,7 +71,7 @@ const CharityDetail = () => {
             });
             // Gateway Transaction: Redirect to Stripe secure terminal
             window.location.href = res.data.checkout_url;
-        } catch {
+        } catch (err) {
             alert("Transaction Alert: Could not initialize secure donation gateway.");
         } finally {
             setIsDonating(false);
