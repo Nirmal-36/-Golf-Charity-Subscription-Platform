@@ -35,8 +35,8 @@
       "destination": "backend/vercel_app.py"
     },
     {
-      "source": "/((?!api|admin|static/admin|media).*)",
-      "destination": "frontend/index.html"
+      "source": "/((?!api|admin|static/admin|media|assets|favicon.svg|logo.*|.*\\.js|.*\\.css|.*\\.png|.*\\.jpg).*)",
+      "destination": "/frontend/index.html"
     }
   ],
   "crons": [
