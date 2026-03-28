@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { Link } from 'react-router-dom';
-import { Heart, Plus, Edit, Trash2, ArrowLeft, Globe, Tag } from 'lucide-react';
+import { Heart, Plus, Edit, Trash2, ArrowLeft, Globe, Tag, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import CustomSelect from '../../components/ui/CustomSelect';
 import { CHARITY_CATEGORIES } from '../../utils/constants';
@@ -18,6 +18,8 @@ const AdminCharities = () => {
     description: '',
     logo_url: ''
   });
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
   const [activeTab, setActiveTab] = useState('all'); // 'all' or 'pending'
   
   // Modal States
@@ -84,21 +86,35 @@ const AdminCharities = () => {
       description: charity.description || '',
       logo_url: charity.logo_url || ''
     });
+    setLogoFile(null);
+    setLogoPreview(charity.logo_url || null);
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const payload = new FormData();
+      payload.append('name', formData.name);
+      payload.append('category', formData.category);
+      payload.append('description', formData.description);
+      if (logoFile) {
+        payload.append('logo', logoFile);
+      } else if (formData.logo_url) {
+        payload.append('logo_url', formData.logo_url);
+      }
+      const headers = { 'Content-Type': 'multipart/form-data' };
       if (editingCharity) {
-        await api.patch(`/api/charities/admin/${editingCharity.id}/`, formData);
+        await api.patch(`/api/charities/admin/${editingCharity.id}/`, payload, { headers });
       } else {
-        await api.post('/api/charities/admin/', formData);
+        await api.post('/api/charities/admin/', payload, { headers });
       }
       setIsModalOpen(false);
+      setLogoFile(null);
+      setLogoPreview(null);
       fetchCharities();
     } catch (err) {
-      alert("Failed to save charity. " + (err.response?.data?.slug?.[0] || ''));
+      alert('Failed to save charity. ' + (err.response?.data?.slug?.[0] || ''));
     }
   };
 
@@ -160,6 +176,13 @@ const AdminCharities = () => {
                    )}
                 </div>
                 <div className="flex gap-2">
+                   <Link
+                     to={`/charity/${charity.slug}`}
+                     className="p-2 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500 transition"
+                     title="View Public Profile"
+                   >
+                      <ExternalLink size={18} />
+                   </Link>
                    <button onClick={() => openEditModal(charity)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-brand-gold transition" title="Edit Charity">
                       <Edit size={18} />
                    </button>
@@ -263,14 +286,29 @@ const AdminCharities = () => {
                       required
                     />
                   <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Logo URL</label>
-                    <input 
-                      type="url" 
-                      value={formData.logo_url}
-                      onChange={(e) => setFormData({...formData, logo_url: e.target.value})}
-                      className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-green/20 focus:bg-white rounded-2xl p-4 outline-none transition font-medium"
-                      placeholder="https://..."
-                    />
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Logo / Media</label>
+                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-brand-green/40 transition bg-gray-50 overflow-hidden relative">
+                      {logoPreview ? (
+                        <img src={logoPreview} alt="Preview" className="h-full object-contain" />
+                      ) : (
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Click to upload logo</span>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={e => {
+                          const f = e.target.files[0];
+                          if (f) {
+                            setLogoFile(f);
+                            setLogoPreview(URL.createObjectURL(f));
+                          }
+                        }}
+                      />
+                    </label>
+                    {logoPreview && (
+                      <button type="button" onClick={() => { setLogoFile(null); setLogoPreview(null); setFormData({...formData, logo_url: ''}); }} className="text-[10px] text-red-400 font-black mt-1 hover:underline">Remove</button>
+                    )}
                   </div>
                 </div>
 

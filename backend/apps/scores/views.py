@@ -45,3 +45,18 @@ class ScoreDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return GolfScore.objects.filter(user=self.request.user)
+
+class AdminUserScoresView(generics.ListAPIView):
+    """Admin: list all scores for a specific user, with optional edit."""
+    serializer_class = GolfScoreSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')
+        return GolfScore.objects.filter(user_id=user_id).order_by('-played_at', '-submitted_at')
+
+class AdminScoreDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Admin: retrieve, update or delete any score."""
+    serializer_class = GolfScoreSerializer
+    permission_classes = [permissions.IsAdminUser]
+    queryset = GolfScore.objects.all()

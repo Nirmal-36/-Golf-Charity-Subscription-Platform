@@ -58,19 +58,26 @@ const CharityCard = ({ charity, onSelect, isSelected }) => {
           {charity.description}
         </p>
         
-        <div className="pt-4 border-t border-gray-100 mt-auto space-y-4">
+        <div className="pt-4 border-t border-gray-100 mt-auto space-y-2">
           <Link 
             to={`/charity/${charity.slug}`}
+            onClick={(e) => e.stopPropagation()}
             className="w-full py-3 bg-brand-light text-brand-green rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-brand-green hover:text-white transition group"
           >
             View Profile <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </Link>
           
           {isSelectionMode && (
-              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-tighter text-gray-400 px-2">
-                <span>Direct Impact</span>
-                <span className="text-brand-green">${charity.total_received}</span>
-              </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); onSelect(charity.id); }}
+              className={`w-full py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition ${
+                isSelected
+                  ? 'bg-brand-green text-white'
+                  : 'bg-gray-100 text-gray-500 hover:bg-brand-green/10 hover:text-brand-green'
+              }`}
+            >
+              {isSelected ? <><CheckCircle2 size={12} /> Selected</> : 'Select This Charity'}
+            </button>
           )}
         </div>
       </div>

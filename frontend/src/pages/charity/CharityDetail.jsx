@@ -72,6 +72,9 @@ const CharityDetail = () => {
 
     const CategoryIcon = getCategoryIcon(charity.category);
     const bannerImage = charity.images?.find(img => img.is_banner)?.image || charity.logo_image || charity.logo_url;
+    const isAdmin = user?.is_staff || user?.user_role === 'admin';
+    const backPath = isAdmin ? '/admin/charities' : user ? '/charities' : '/explore';
+    const backLabel = isAdmin ? 'Back to Charity Management' : 'Back to Explore';
 
     return (
         <div className="bg-brand-light min-h-screen pb-32">
@@ -85,8 +88,8 @@ const CharityDetail = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/20 to-transparent"></div>
                 
                 <div className="absolute top-8 left-8">
-                   <Link to="/explore" className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-white font-bold hover:bg-white/20 transition group">
-                      <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Explore
+                   <Link to={backPath} className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-white font-bold hover:bg-white/20 transition group">
+                      <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> {backLabel}
                    </Link>
                 </div>
 

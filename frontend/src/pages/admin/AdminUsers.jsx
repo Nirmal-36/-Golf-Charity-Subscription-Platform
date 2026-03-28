@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
-import { Search, User, Mail, CreditCard, Heart, ArrowLeft } from 'lucide-react';
+import { Search, User, Mail, CreditCard, Heart, ArrowLeft, Edit2, ChevronRight, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import CustomSelect from '../../components/ui/CustomSelect';
 import CustomModal from '../../components/ui/CustomModal';
 
@@ -14,6 +15,17 @@ const AdminUsers = () => {
   // Modal States
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+
+  // Score Editor States
+  const [scoresModalUser, setScoresModalUser] = useState(null);
+  const [userScores, setUserScores] = useState([]);
+  const [loadingScores, setLoadingScores] = useState(false);
+  const [editingScore, setEditingScore] = useState(null); // { id, score }
+
+  // Edit User Profile States
+  const [editUserModal, setEditUserModal] = useState(null); // user object
+  const [editForm, setEditForm] = useState({});
+  const [savingUser, setSavingUser] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -30,7 +42,7 @@ const AdminUsers = () => {
     try {
       await api.post(`/api/auth/admin/users/${userId}/toggle-status/`);
       fetchUsers();
-    } catch (err) {
+    } catch {
       alert("Failed to toggle status.");
     }
   };
@@ -40,7 +52,7 @@ const AdminUsers = () => {
     try {
       await api.delete(`/api/auth/admin/users/${userToDelete}/`);
       fetchUsers();
-    } catch (err) {
+    } catch {
       alert("Failed to delete user.");
     }
   };
@@ -48,6 +60,65 @@ const AdminUsers = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  const openScoresModal = async (user) => {
+    setScoresModalUser(user);
+    setLoadingScores(true);
+    try {
+      const { data } = await api.get(`/api/scores/admin/user/${user.id}/`);
+      setUserScores(data);
+    } catch {
+      setUserScores([]);
+    } finally {
+      setLoadingScores(false);
+    }
+  };
+
+  const handleSaveScore = async (scoreId, newValue) => {
+    try {
+      await api.patch(`/api/scores/admin/${scoreId}/`, { score: parseInt(newValue, 10) });
+      openScoresModal(scoresModalUser); // refresh
+      setEditingScore(null);
+    } catch {
+      alert('Failed to update score.');
+    }
+  };
+
+  const handleDeleteScore = async (scoreId) => {
+    if (!window.confirm('Delete this score?')) return;
+    try {
+      await api.delete(`/api/scores/admin/${scoreId}/`);
+      openScoresModal(scoresModalUser);
+    } catch {
+      alert('Failed to delete score.');
+    }
+  };
+
+  const openEditUserModal = (user) => {
+    setEditUserModal(user);
+    setEditForm({
+      username: user.username || '',
+      email: user.email || '',
+      first_name: user.first_name || '',
+      last_name: user.last_name || '',
+      donation_percentage: user.donation_percentage || 10,
+      is_staff: user.is_staff || false,
+    });
+  };
+
+  const handleSaveUser = async () => {
+    if (!editUserModal) return;
+    setSavingUser(true);
+    try {
+      await api.patch(`/api/auth/admin/users/${editUserModal.id}/`, editForm);
+      fetchUsers();
+      setEditUserModal(null);
+    } catch (err) {
+      alert('Failed to update user: ' + (err.response?.data ? JSON.stringify(err.response.data) : 'Unknown error'));
+    } finally {
+      setSavingUser(false);
+    }
+  };
 
   const filteredUsers = users.filter(u => {
     const matchesSearch = u.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -174,6 +245,18 @@ const AdminUsers = () => {
                   </td>
                   <td className="px-6 py-4 text-right text-sm">
                     <div className="flex items-center justify-end gap-3">
+                      <button
+                        onClick={() => openEditUserModal(user)}
+                        className="text-blue-600 font-bold hover:underline flex items-center gap-1"
+                      >
+                        <Edit2 size={13} /> Edit
+                      </button>
+                      <button
+                        onClick={() => openScoresModal(user)}
+                        className="text-brand-green font-bold hover:underline flex items-center gap-1"
+                      >
+                        <Edit2 size={13} /> Scores
+                      </button>
                       <button 
                         onClick={() => handleToggleStatus(user.id)}
                         className={`${user.is_active ? 'text-orange-600' : 'text-blue-600'} font-bold hover:underline`}
@@ -211,6 +294,170 @@ const AdminUsers = () => {
         confirmText="Delete User"
         onConfirm={handleDelete}
       />
+
+      {/* Score Editor Modal */}
+      {scoresModalUser && (
+        <div className="fixed inset-0 z-50 bg-brand-dark/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div className="bg-brand-dark text-white p-6 flex items-center justify-between">
+              <div>
+                <h3 className="font-black text-lg">Golf Scores</h3>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-0.5">{scoresModalUser.email}</p>
+              </div>
+              <button onClick={() => { setScoresModalUser(null); setEditingScore(null); }} className="text-gray-400 hover:text-white">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-3 max-h-80 overflow-y-auto">
+              {loadingScores ? (
+                <div className="text-center text-gray-400 py-8">Loading...</div>
+              ) : userScores.length === 0 ? (
+                <div className="text-center text-gray-400 py-8 text-sm">No scores recorded.</div>
+              ) : userScores.map(s => (
+                <div key={s.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                  <div>
+                    <div className="text-[10px] font-black text-gray-400 uppercase">{s.played_at || s.submitted_at}</div>
+                    {editingScore?.id === s.id ? (
+                      <input
+                        type="number" min={1} max={45}
+                        className="text-xl font-black text-brand-green w-20 border-b-2 border-brand-green focus:outline-none bg-transparent"
+                        value={editingScore.score}
+                        onChange={e => setEditingScore({ ...editingScore, score: e.target.value })}
+                      />
+                    ) : (
+                      <div className="text-2xl font-black text-brand-green">{s.score}</div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {editingScore?.id === s.id ? (
+                      <>
+                        <button onClick={() => handleSaveScore(s.id, editingScore.score)} className="text-xs bg-brand-green text-white px-3 py-1.5 rounded-lg font-black hover:bg-brand-green/90">Save</button>
+                        <button onClick={() => setEditingScore(null)} className="text-xs text-gray-400 font-bold hover:text-gray-600">Cancel</button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={() => setEditingScore({ id: s.id, score: s.score })} className="text-brand-green font-bold text-xs hover:underline"><Edit2 size={14} /></button>
+                        <button onClick={() => handleDeleteScore(s.id)} className="text-red-400 font-bold text-xs hover:underline">×</button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Edit User Modal */}
+      {editUserModal && (
+        <div className="fixed inset-0 z-50 bg-brand-dark/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-[40px] w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="bg-brand-dark text-white p-8 flex items-center justify-between">
+              <div>
+                <h3 className="font-black text-xl">Edit <span className="text-brand-green">User Profile</span></h3>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-0.5">User ID: {editUserModal.id}</p>
+              </div>
+              <button onClick={() => setEditUserModal(null)} className="text-gray-400 hover:text-white transition">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="p-8 space-y-4 max-h-[70vh] overflow-y-auto">
+              {/* Username & Email */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Username</label>
+                  <input 
+                    type="text" 
+                    value={editForm.username}
+                    onChange={(e) => setEditForm({...editForm, username: e.target.value})}
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-green/20 focus:bg-white rounded-2xl p-4 outline-none transition font-medium text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Email Address</label>
+                  <input 
+                    type="email" 
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-green/20 focus:bg-white rounded-2xl p-4 outline-none transition font-medium text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Names */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">First Name</label>
+                  <input 
+                    type="text" 
+                    value={editForm.first_name}
+                    onChange={(e) => setEditForm({...editForm, first_name: e.target.value})}
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-green/20 focus:bg-white rounded-2xl p-4 outline-none transition font-medium text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Last Name</label>
+                  <input 
+                    type="text" 
+                    value={editForm.last_name}
+                    onChange={(e) => setEditForm({...editForm, last_name: e.target.value})}
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-green/20 focus:bg-white rounded-2xl p-4 outline-none transition font-medium text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Donation Percentage */}
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 pl-2">Donation Percentage (%)</label>
+                <input 
+                  type="number" 
+                  min="10"
+                  max="100"
+                  value={editForm.donation_percentage}
+                  onChange={(e) => setEditForm({...editForm, donation_percentage: parseInt(e.target.value)})}
+                  className="w-full bg-gray-50 border-2 border-transparent focus:border-brand-green/20 focus:bg-white rounded-2xl p-4 outline-none transition font-black text-brand-green text-lg"
+                />
+              </div>
+
+              {/* Staff Toggle */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border-2 border-transparent hover:border-brand-green/10 transition">
+                <div>
+                  <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Administrator Status</div>
+                  <div className="text-xs font-bold text-gray-600 mt-1">Grant this user full system access</div>
+                </div>
+                <button 
+                  onClick={() => setEditForm({...editForm, is_staff: !editForm.is_staff})}
+                  className={`relative w-12 h-6 rounded-full transition-colors duration-200 outline-none ${editForm.is_staff ? 'bg-brand-green' : 'bg-gray-200'}`}
+                >
+                  <motion.div 
+                    animate={{ x: editForm.is_staff ? 28 : 4 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                  />
+                </button>
+              </div>
+
+              {/* Actions */}
+              <div className="pt-6 flex gap-3">
+                <button 
+                  type="button"
+                  onClick={() => setEditUserModal(null)}
+                  className="flex-1 px-6 py-4 rounded-2xl font-bold text-gray-500 hover:bg-gray-100 transition"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleSaveUser}
+                  disabled={savingUser}
+                  className="flex-1 bg-brand-green text-white px-6 py-4 rounded-2xl font-bold hover:bg-brand-dark transition shadow-lg shadow-brand-green/20 disabled:opacity-50"
+                >
+                  {savingUser ? 'Saving...' : 'Update Profile'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
